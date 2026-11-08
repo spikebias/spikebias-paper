@@ -7,6 +7,7 @@ import random
 import matplotlib
 import collections 
 from scipy.stats import mannwhitneyu
+from statsmodels.stats.multitest import multipletests
 
 # set plot parameters
 BOXPLOT_PMS = {
@@ -927,6 +928,13 @@ def plot_fr_std_stats_by_layer_vert(ax, df_nv, df_ns, df_ne, df_nb, layers, cl, 
     plot_data = plot_data[mask]
     plot_data = plot_data.sort_values(by=["layer"])
 
+    # number of units resampled by the bootstraps of each box (the variances of fewer than 3 Marques-Smith units are not tested, see get_stats)
+    n_units = {("M", ly): int((df_nv["layer"] == ly).sum()) for ly in layers}
+    n_units.update({("NS", ly): int((df_ns["layer"] == ly).sum()) for ly in layers})
+    n_units.update({("E", ly): int((df_ne["layer"] == ly).sum()) for ly in layers})
+    n_units[("S", "L5")] = len(df_nb)
+    plot_data["n_units"] = [n_units[(e, ly)] for e, ly in zip(plot_data["experiment"], plot_data["layer"])]
+
     # we plot stds stats over bootstrapped log10(firing rate) which reflects
     # best what we see from the distribution plots (stats over raw data
     # is not visible).
@@ -1561,64 +1569,53 @@ def plot_single_unit_ratio_by_drift_corr(ax, drift_corr_v100, drift_corr_rtx5090
     return ax
 
 
-def get_stats(df_fr, value_col, layers, exps_order):
-    """Calculate Mann-Whitney U test with method set 
-    to "auto".
-    
-    note: "auto" is much faster than "exact" for large 
-    sample size
+def get_stats(df_fr, value_col, layers, exps_order, min_units_M=None):
+    """Two-sided Mann-Whitney U test (method "auto", much faster than "exact" for large samples) of each experiment against Marques-Smith (M) in each
+    layer, on the values that are not missing (NaN). The P values of the tests of the call (one panel of one sorter) are Holm-corrected for multiple
+    comparisons: "p" is the uncorrected P, "p_holm" the corrected P and "symbol" the significance of the corrected P (empty when no test is possible).
+    With min_units_M (bootstrapped variances, whose rows give the number of units of their box in the column "n_units"), the layers with fewer than
+    min_units_M Marques-Smith units are not tested ("not_tested" True): the bootstrapped variances of one or two units take only one or two values.
     """
+    assert min_units_M is None or "n_units" in df_fr, "min_units_M needs the number of units of each box (column n_units)"
+
+    def symbol(p):
+        return "" if np.isnan(p) else "ns" if p >= 0.05 else "*" if p >= 0.01 else "**" if p >= 0.001 else "***"
 
     myhash = collections.defaultdict(dict)
-
+    tested = []
     for li, ly in enumerate(layers):
+        rows_M = df_fr[(df_fr["layer"] == ly) & (df_fr["experiment"] == "M")]
+        n_units_M = int(rows_M["n_units"].iloc[0]) if "n_units" in df_fr and len(rows_M) else None
+        too_few = min_units_M is not None and n_units_M is not None and n_units_M < min_units_M
         for ei, targ_exp in enumerate(exps_order[1:]):
 
-            # get experiments data
-            M = df_fr[(df_fr["layer"] == ly) & (df_fr["experiment"] == "M")]
-            target = df_fr[(df_fr["layer"] == ly) & (df_fr["experiment"] == targ_exp)]
+            # get experiments data (missing values dropped)
+            M = rows_M[value_col].dropna().values
+            target = df_fr[(df_fr["layer"] == ly) & (df_fr["experiment"] == targ_exp)][value_col].dropna().values
 
-            # Experiments vs Marques-Smith
-            if (len(M[value_col]) > 0) & (len(target[value_col]) > 0):
-                
-                # calculate Mann-Whitney U test
-                z, p = mannwhitneyu(
-                    M[value_col].values,
-                    target[value_col].values,
-                    method="auto",
-                )
-                print(
-                    f"""{ly} - M vs. {targ_exp}, z={z}, p={p}, N_m={len(M[value_col].values)}, N_target={len(target[value_col].values)}"""
-                )
-                
-                # record stats in hash
-                myhash[ly][targ_exp] = {}
-                myhash[ly][targ_exp]["p"] = p
-                myhash[ly][targ_exp]["z"] = z
-                myhash[ly][targ_exp]["symbol"] = (
-                    ""
-                    if np.isnan(p)
-                    else
-                    "ns"
-                    if p >= 0.05
-                    else (
-                        "*"
-                        if p < 0.05 and p >= 0.01
-                        else "**" if p < 0.01 and p >= 0.001 else "***"
-                    )
-                )
-            # case no data, record empty symbol
+            myhash[ly][targ_exp] = {"n_M": len(M), "n_target": len(target), "n_units_M": n_units_M, "symbol": "", "not_tested": False}
+            if (len(M) > 0) & (len(target) > 0) & (not too_few):
+                z, p = mannwhitneyu(M, target, method="auto")
+                print(f"""{ly} - M vs. {targ_exp}, z={z}, p={p}, N_m={len(M)}, N_target={len(target)}""")
+                myhash[ly][targ_exp].update(p=p, z=z)
+                tested.append((ly, targ_exp))
+            elif (len(M) > 0) & (len(target) > 0):
+                myhash[ly][targ_exp]["not_tested"] = True
+                print(f"""{ly} - M vs. {targ_exp}, not tested: {n_units_M} Marques-Smith units""")
             else:
-                print(
-                    f"""{ly} - M vs. {targ_exp}, z="nan", p="nan", N_m={len(M[value_col].values)}, N_target={len(target[value_col].values)}"""
-                )
-                myhash[ly][targ_exp] = {}
-                myhash[ly][targ_exp]["symbol"] = ""
+                print(f"""{ly} - M vs. {targ_exp}, z="nan", p="nan", N_m={len(M)}, N_target={len(target)}""")
+
+    # Holm correction for the comparisons of the panel
+    if tested:
+        p_holm = multipletests([myhash[ly][e]["p"] for ly, e in tested], method="holm")[1]
+        for (ly, e), ph in zip(tested, p_holm):
+            myhash[ly][e]["p_holm"] = ph
+            myhash[ly][e]["symbol"] = symbol(ph)
     return myhash
 
 
-def annotate_stats(ax, df, value_col, layers, exps_order, xadj=1):
-    """Annotate plot with statistical significance symbols 
+def annotate_stats(ax, df, value_col, layers, exps_order, xadj=1, min_units_M=None):
+    """Annotate plot with statistical significance symbols
     for the Mann-Whitney U test
 
     Args:
@@ -1628,6 +1625,7 @@ def annotate_stats(ax, df, value_col, layers, exps_order, xadj=1):
         layers (_type_): _description_
         exps_order (_type_): _description_
         xadj (int, optional): _description_. Defaults to 1.
+        min_units_M (int, optional): layers with fewer Marques-Smith units are not tested (see get_stats). Defaults to None (all tested).
 
     Returns:
         _type_: _description_
@@ -1636,7 +1634,7 @@ def annotate_stats(ax, df, value_col, layers, exps_order, xadj=1):
     FTZ = 5
 
     # get Mann-Whitney stats
-    stats_hash = get_stats(df, value_col, layers, exps_order)
+    stats_hash = get_stats(df, value_col, layers, exps_order, min_units_M=min_units_M)
 
     # x-coord boxes
     GAP = 0.17

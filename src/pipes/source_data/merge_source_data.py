@@ -4,8 +4,8 @@ author: laquitainesteeve@gmail.com
 
 Input: figures/8_source_data/<panel>/*.xlsx (e.g. fig2a/fig2a.xlsx, supp_fig6c/supp_fig6c.xlsx), written by the notebooks of
 notebooks/2_results_editorial_requests/. Output (the files requested by the editor, each below the 30 MB limit):
-paper/Source_Data_1.xlsx: sheets "Fig. 2", ..., "Supplementary Fig. 9" except Supplementary Fig. 2;
-paper/Source_Data_2.xlsx and paper/Source_Data_3.xlsx: the sheet "Supplementary Fig. 2" (926,000 rows, 40 MB), split by panel (a-c and d-g).
+paper/submission/Source_Data_1.xlsx: sheets "Fig. 2", ..., "Supplementary Fig. 9" except Supplementary Fig. 2;
+paper/submission/Source_Data_2.xlsx and paper/submission/Source_Data_3.xlsx: the sheet "Supplementary Fig. 2" (926,000 rows, 40 MB), split by panel (a-c and d-g).
 In each sheet, the panels follow each other from top to bottom: a title row ("Fig. 2a", followed by the file and the sheet when a panel has
 several tables), the column names, the data and an empty row.
 
@@ -26,9 +26,9 @@ from openpyxl.cell import WriteOnlyCell
 from openpyxl.styles import Font
 
 SOURCE_DIR = "figures/8_source_data"
-OUTPUTS = {1: os.path.join("paper", "Source_Data_1.xlsx"),    # the Source Data files requested by the editor, next to the manuscript
-           2: os.path.join("paper", "Source_Data_2.xlsx"),
-           3: os.path.join("paper", "Source_Data_3.xlsx")}
+OUTPUTS = {1: os.path.join("paper", "submission", "Source_Data_1.xlsx"),    # the Source Data files requested by the editor
+           2: os.path.join("paper", "submission", "Source_Data_2.xlsx"),
+           3: os.path.join("paper", "submission", "Source_Data_3.xlsx")}
 SPLIT_SHEET = ("supp_fig", 2)                                  # sheet too large for one file (40 MB): panels a-c in file 2, d-g in file 3
 SPLIT_PANELS = {"a": 2, "b": 2, "c": 2, "d": 3, "e": 3, "f": 3, "g": 3}
 MAX_ROWS = 1_048_576  # rows of an Excel sheet

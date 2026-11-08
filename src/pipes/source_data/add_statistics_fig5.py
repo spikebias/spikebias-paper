@@ -17,7 +17,7 @@ import pandas as pd
 from scipy import stats
 
 SOURCE = "figures/8_source_data/fig5a"
-TESTS = {"M, NS, NS-2X": ["M", "NS", "NS-2X"], "NS, E": ["NS", "E"], "M, S": ["M", "S"], "H, DS": ["H", "DS"], "M, H": ["M", "H"], "NS, DS": ["NS", "DS"]}
+TESTS = {"M, NS, NS-2X": ["M", "NS", "NS-2X"], "M, E": ["M", "E"], "M, S": ["M", "S"], "H, DS": ["H", "DS"], "M, H": ["M", "H"], "NS, DS": ["NS", "DS"]}
 
 
 def main():

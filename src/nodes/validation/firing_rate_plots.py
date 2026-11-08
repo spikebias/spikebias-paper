@@ -7,7 +7,9 @@ figure: position of the axes, of the layer ticks (as in the figure, the ticks of
 slot per experiment in each layer, the boxes of the experiments without data are left empty), size of the boxes (6.85 pt), of the whiskers' caps (half a box),
 of the outliers (2.7 pt), of the brackets and of the stars. Boxes: median and 25th-75th percentiles, notches: 95% confidence interval of the median
 (1.57 IQR / sqrt(n)), whiskers: 1.5 IQR (Tukey), circles: outliers. Brackets and stars: two-sided Mann-Whitney U test of each experiment against the
-Marques-Smith data (M) in the layer (ns: p >= 0.05, *: p < 0.05, **: p < 0.01, ***: p < 0.001).
+Marques-Smith data (M) in the layer, Holm-corrected for the comparisons of the panel (ns: p >= 0.05, *: p < 0.05, **: p < 0.01, ***: p < 0.001). In panel c,
+the layers with fewer than 3 Marques-Smith units (column "n_units" of the source data) are not tested: the bootstrapped variances of one or two units take
+only one or two values.
 """
 
 import numpy as np
@@ -16,6 +18,7 @@ from matplotlib import pyplot as plt
 from matplotlib.cbook import boxplot_stats
 from matplotlib.patches import Polygon
 from scipy.stats import mannwhitneyu
+from statsmodels.stats.multitest import multipletests
 
 LAYERS = ["L1", "L2/3", "L4", "L5", "L6"]
 EXPERIMENTS = ["M", "NS", "E", "S"]
@@ -49,6 +52,7 @@ PANELS = {
         axis_y=296.99, axis_x=(258.94, 309.58), xticks=[(0, 258.94, 259.5), (0.5, 301.14, 302.55)],
         xlabel_xy=(284.44, 314.16), tick_label_y=308.1,
         bracket_x=[291.91, 298.35, 304.83], star_dx=[2.7, 2.9, 3.8],
+        min_units_M=3,              # layers with fewer Marques-Smith units are not tested
     ),
 }
 
@@ -57,11 +61,19 @@ def symbol(p):
     return "ns" if p >= 0.05 else "*" if p >= 0.01 else "**" if p >= 0.001 else "***"
 
 
-def mann_whitney(df, value, layer, exp):
-    """Two-sided Mann-Whitney U test of an experiment against M in a layer"""
+def too_few_units_M(df, layer, min_units_M):
+    """True when the layer has fewer than min_units_M Marques-Smith units (column "n_units"); False when min_units_M is None"""
+    if min_units_M is None:
+        return False
+    n = df[(df["layer"] == layer) & (df["experiment"] == "M")]["n_units"]
+    return len(n) > 0 and n.iloc[0] < min_units_M
+
+
+def mann_whitney(df, value, layer, exp, min_units_M=None):
+    """P of the two-sided Mann-Whitney U test of an experiment against M in a layer; None without test (a box without data or too few M units)"""
     m = df[(df["layer"] == layer) & (df["experiment"] == "M")][value].dropna().values
     t = df[(df["layer"] == layer) & (df["experiment"] == exp)][value].dropna().values
-    if len(m) == 0 or len(t) == 0:
+    if len(m) == 0 or len(t) == 0 or too_few_units_M(df, layer, min_units_M):
         return None
     return mannwhitneyu(m, t, method="auto").pvalue
 
@@ -105,21 +117,20 @@ def plot_source_data(df, panel):
                    capprops=dict(color=c, linewidth=LINEWIDTH), medianprops=dict(color=c, linewidth=LINEWIDTH),
                    flierprops=dict(marker="o", markerfacecolor="w", markeredgecolor=c, markersize=2.7, markeredgewidth=LINEWIDTH))
 
-    # brackets and stars
-    for li, layer in enumerate(LAYERS):
-        for ei, exp in enumerate(EXPERIMENTS[1:]):
-            p = mann_whitney(df, g["value"], layer, exp)
-            if p is None:
-                continue
-            xb = g["bracket_x"][ei]
-            ya, yb = centres[(layer, "M")] - 0.35, centres[(layer, exp)] + (1.8, 1.5, 1.3)[ei]
-            ax.plot([xb, xb], [ya, yb], **k)
-            sym = symbol(p)
-            ym = (ya + yb) / 2
-            if sym == "ns":
-                ax.text(xb + NS_DX[ei], ym + NS_DY[ei], "ns", rotation=270, rotation_mode="anchor", ha="left", va="baseline", fontsize=FONT, fontweight="bold")
-            else:
-                for j in range(len(sym)):
-                    c = np.array([xb + g["star_dx"][ei], ym + (j - (len(sym) - 1) / 2) * 3.24 + 0.15])
-                    ax.add_patch(Polygon(STAR + c, closed=True, facecolor="k", edgecolor="none"))
+    # brackets and stars: P values Holm-corrected for the comparisons of the panel
+    tests = [(layer, ei, exp, mann_whitney(df, g["value"], layer, exp, g.get("min_units_M"))) for layer in LAYERS for ei, exp in enumerate(EXPERIMENTS[1:])]
+    tests = [t_ for t_ in tests if t_[3] is not None]
+    p_holm = multipletests([t_[3] for t_ in tests], method="holm")[1]
+    for (layer, ei, exp, _), p in zip(tests, p_holm):
+        xb = g["bracket_x"][ei]
+        ya, yb = centres[(layer, "M")] - 0.35, centres[(layer, exp)] + (1.8, 1.5, 1.3)[ei]
+        ax.plot([xb, xb], [ya, yb], **k)
+        sym = symbol(p)
+        ym = (ya + yb) / 2
+        if sym == "ns":
+            ax.text(xb + NS_DX[ei], ym + NS_DY[ei], "ns", rotation=270, rotation_mode="anchor", ha="left", va="baseline", fontsize=FONT, fontweight="bold")
+        else:
+            for j in range(len(sym)):
+                c = np.array([xb + g["star_dx"][ei], ym + (j - (len(sym) - 1) / 2) * 3.24 + 0.15])
+                ax.add_patch(Polygon(STAR + c, closed=True, facecolor="k", edgecolor="none"))
     return fig

@@ -5,8 +5,10 @@ author: laquitainesteeve@gmail.com
 Reads figures/8_source_data/fig4b/fig4b.xlsx (log10 firing rates of the single units) and fig4c/fig4c.xlsx (variances of the log10 firing rates, 100
 bootstraps per box) and writes fig4b_statistics.xlsx and fig4c_statistics.xlsx (merged into Source_Data.xlsx by merge_source_data.py) with:
 * sheet "per_layer": two-sided Mann-Whitney U test of each simulation (NS: spontaneous, E: evoked, S: synthetic) against the Marques-Smith data (M) in each
-  layer (the tests of the stars of the figure; no correction for multiple comparisons): n, medians, difference of the medians (simulation - M) with its
-  95% bootstrap confidence interval (10,000 resamples, seed 0; spikes/s in 4b, variance in 4c), U statistic of M, exact P, symbol
+  layer (the tests of the stars of the figure): n, medians, difference of the medians (simulation - M) with its 95% bootstrap confidence interval
+  (10,000 resamples, seed 0; spikes/s in 4b, variance in 4c), U statistic of M, exact P, P Holm-corrected for the comparisons of the panel and the
+  symbol of the figure (from the Holm-corrected P). In 4c, the layers with fewer than 3 Marques-Smith units (n_units_M) are not tested (layer 4: one unit,
+  whose bootstrapped variances are all 0)
 * sheet "layers_5_6" (4b only): the test of the Results text: median firing rate in layers 5 and 6 (spikes/s) of M, of the simulations and of NS and E pooled,
   difference of the medians with its 95% bootstrap confidence interval (10,000 resamples, seed 0) and two-sided Mann-Whitney U test
 
@@ -18,8 +20,9 @@ Usage:
 import numpy as np
 import pandas as pd
 from scipy.stats import mannwhitneyu
+from statsmodels.stats.multitest import multipletests
 
-from src.nodes.validation.firing_rate_plots import LAYERS, PANELS, symbol
+from src.nodes.validation.firing_rate_plots import LAYERS, PANELS, symbol, too_few_units_M
 
 SOURCE = "figures/8_source_data"
 SEED = 0
@@ -34,22 +37,34 @@ def median_difference(m, x, to_rate, rng):
     return np.median(x) - np.median(m), lo, hi
 
 
-def per_layer(df, value, to_rate):
+def per_layer(df, value, to_rate, min_units_M=None):
     rng = np.random.default_rng(SEED)
     rows = []
     for layer in LAYERS:
         m = df[(df["layer"] == layer) & (df["experiment"] == "M")][value].dropna().values
+        too_few = too_few_units_M(df, layer, min_units_M)     # not tested: fewer than min_units_M Marques-Smith units
         for exp in ["NS", "E", "S"]:
             x = df[(df["layer"] == layer) & (df["experiment"] == exp)][value].dropna().values
             if len(m) == 0 or len(x) == 0:
                 continue
-            res = mannwhitneyu(m, x, alternative="two-sided", method="auto")
             diff, lo, hi = median_difference(m, x, to_rate, rng)
-            rows.append(dict(layer=layer, comparison=f"{exp} vs M", test="Mann-Whitney U (two-sided)", n_M=len(m), n_simulation=len(x),
-                             median_M=to_rate(np.median(m)), median_simulation=to_rate(np.median(x)), difference_of_medians=diff, ci95_low=lo, ci95_high=hi,
-                             U_M=res.statistic, p_value=res.pvalue,
-                             significance=symbol(res.pvalue)))
-    return pd.DataFrame(rows)
+            row = dict(layer=layer, comparison=f"{exp} vs M", test="Mann-Whitney U (two-sided)", n_M=len(m))
+            if min_units_M is not None:
+                row["n_units_M"] = int(df[(df["layer"] == layer) & (df["experiment"] == "M")]["n_units"].iloc[0])   # Marques-Smith units resampled
+            row.update(n_simulation=len(x), median_M=to_rate(np.median(m)), median_simulation=to_rate(np.median(x)), difference_of_medians=diff,
+                       ci95_low=lo, ci95_high=hi)
+            if too_few:
+                row.update(test=f"not tested (fewer than {min_units_M} Marques-Smith units)", U_M=np.nan, p_value=np.nan)
+            else:
+                res = mannwhitneyu(m, x, alternative="two-sided", method="auto")
+                row.update(U_M=res.statistic, p_value=res.pvalue)
+            rows.append(row)
+    out = pd.DataFrame(rows)
+    tested = out["p_value"].notna()
+    out["p_value_holm"] = np.nan
+    out.loc[tested, "p_value_holm"] = multipletests(out.loc[tested, "p_value"].values, method="holm")[1]   # Holm correction for the comparisons of the panel
+    out["significance"] = [symbol(p) if t else "not tested" for p, t in zip(out["p_value_holm"], tested)]
+    return out
 
 
 def layers_5_6(df, value):
@@ -73,10 +88,10 @@ if __name__ == "__main__":
     for panel, to_rate in (("b", lambda v: 10 ** v), ("c", lambda v: v)):
         value = PANELS[panel]["value"]
         df = pd.read_excel(f"{SOURCE}/fig4{panel}/fig4{panel}.xlsx")
-        pl = per_layer(df, value, to_rate)
+        pl = per_layer(df, value, to_rate, PANELS[panel].get("min_units_M"))
         with pd.ExcelWriter(f"{SOURCE}/fig4{panel}/fig4{panel}_statistics.xlsx") as w:
             pl.to_excel(w, sheet_name="per_layer", index=False)
             if panel == "b":
                 layers_5_6(df, value).to_excel(w, sheet_name="layers_5_6", index=False)
-        print(f"fig4{panel}: {len(pl)} tests, smallest P {pl.p_value.min():.1e}, largest P {pl.p_value.max():.1e}")
+        print(f"fig4{panel}: {pl.p_value.notna().sum()} tests ({pl.p_value.isna().sum()} comparisons not tested), smallest P {pl.p_value.min():.1e}, largest P {pl.p_value.max():.1e}")
     print(pd.read_excel(f"{SOURCE}/fig4b/fig4b_statistics.xlsx", sheet_name="layers_5_6").round(3).to_string())
