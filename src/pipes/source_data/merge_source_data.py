@@ -1,11 +1,11 @@
-"""Merge the source data of every panel into Excel files of less than 30 MB, one sheet per figure (editor's request, Nature Communications)
+"""Merge the source data of every panel into one Excel file of less than 30 MB, one sheet per figure (editor's request, Nature Communications)
 
 author: laquitainesteeve@gmail.com
 
 Input: figures/8_source_data/<panel>/*.xlsx (e.g. fig2a/fig2a.xlsx, supp_fig6c/supp_fig6c.xlsx), written by the notebooks of
-notebooks/2_results_editorial_requests/. Output (the files requested by the editor, each below the 30 MB limit):
-paper/submission/Source_Data_1.xlsx: sheets "Fig. 2", ..., "Supplementary Fig. 9" except Supplementary Fig. 2;
-paper/submission/Source_Data_2.xlsx and paper/submission/Source_Data_3.xlsx: the sheet "Supplementary Fig. 2" (926,000 rows, 40 MB), split by panel (a-c and d-g).
+notebooks/2_results_editorial_requests/. Output (the file requested by the editor, below the 30 MB limit): paper/submission/Source_Data.xlsx, with the
+sheets "Fig. 2", ..., "Supplementary Fig. 9". The traces and spectra of Supplementary Fig. 2 are stored as they are plotted, downsampled for display
+(src/nodes/validation/trace_plots.py and psd_plots.py, downsample_for_display), which keeps the file below 30 MB (about 27 MB).
 In each sheet, the panels follow each other from top to bottom: a title row ("Fig. 2a", followed by the file and the sheet when a panel has
 several tables), the column names, the data and an empty row.
 
@@ -26,11 +26,7 @@ from openpyxl.cell import WriteOnlyCell
 from openpyxl.styles import Font
 
 SOURCE_DIR = "figures/8_source_data"
-OUTPUTS = {1: os.path.join("paper", "submission", "Source_Data_1.xlsx"),    # the Source Data files requested by the editor
-           2: os.path.join("paper", "submission", "Source_Data_2.xlsx"),
-           3: os.path.join("paper", "submission", "Source_Data_3.xlsx")}
-SPLIT_SHEET = ("supp_fig", 2)                                  # sheet too large for one file (40 MB): panels a-c in file 2, d-g in file 3
-SPLIT_PANELS = {"a": 2, "b": 2, "c": 2, "d": 3, "e": 3, "f": 3, "g": 3}
+OUTPUT = os.path.join("paper", "submission", "Source_Data.xlsx")    # the Source Data file requested by the editor
 MAX_ROWS = 1_048_576  # rows of an Excel sheet
 
 
@@ -92,11 +88,7 @@ def main():
         if files:
             panels.setdefault(key[:2], []).append((key[2], files))
 
-    books = {1: {k: v for k, v in panels.items() if k != SPLIT_SHEET}, 2: {}, 3: {}}
-    for letter, files in panels[SPLIT_SHEET]:
-        books[SPLIT_PANELS[letter]].setdefault(SPLIT_SHEET, []).append((letter, files))
-    for n, selection in books.items():
-        write_book(OUTPUTS[n], selection, t0)
+    write_book(OUTPUT, panels, t0)
 
 
 if __name__ == "__main__":

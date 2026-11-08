@@ -8,12 +8,14 @@ title and axis labels. Text is Arial 5 pt (title 7 pt, bold), editable.
 """
 
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.font_manager import FontProperties
 from matplotlib.textpath import TextPath
 from matplotlib.transforms import Affine2D
 
 FONT, TITLE = 5, 7
+DISPLAY_BLOCK_S = 0.001     # for display, each 1-ms block of a trace is drawn by its minimum and its maximum
 COLUMNS = ["L1_voltage_uV", "L2_3_voltage_uV", "L4_voltage_uV", "L5_voltage_uV", "L6_voltage_uV"]
 LAYER_COLORS = {"L1": (0.7137, 0.6157, 0.3765), "L2/3": (0.7608, 0.4549, 0.5843), "L4": (0.6431, 0.5333, 0.6627), "L5": (0.3294, 0.4274, 0.498), "L6": (0.5647, 0.7294, 0.5098)}
 TRACE_COLOR, TRACE_LW, AXIS_LW, TICK_LW = (0.298, 0.298, 0.298), 0.3004, 1.0013, 1.0414
@@ -105,3 +107,18 @@ def plot_traces(df, panel=IN_VIVO_NPX):
         _ctext(ax, g["ylabel"][1], g["ylabel"][2], g["ylabel"][0], rotation=90)
     _ctext(ax, g["xlabel"][1], g["xlabel"][2], g["xlabel"][0])
     return fig
+
+
+def downsample_for_display(df, block_s=DISPLAY_BLOCK_S):
+    """Traces for display: each block of block_s seconds is replaced by its minimum (at the start of the block) and its maximum (at its middle), so
+    that every peak and trough is kept and the traces fill the same y range; df has the columns time_s and one voltage column per layer, sampled
+    regularly. The panels and their source data use this version; the statistics use the full-resolution traces."""
+    t = df["time_s"].values
+    n = max(1, int(round(block_s / np.median(np.diff(t)))))     # samples per block
+    columns = [c for c in df.columns if c != "time_s"]
+    m = len(df) // n * n
+    v = df[columns].values[:m].reshape(-1, n, len(columns))
+    tb = t[:m].reshape(-1, n)
+    times = np.stack([tb[:, 0], tb[:, n // 2]], axis=1).ravel()
+    values = np.stack([v.min(axis=1), v.max(axis=1)], axis=1).reshape(-1, len(columns))
+    return pd.DataFrame(np.column_stack([times, values]), columns=["time_s"] + columns)

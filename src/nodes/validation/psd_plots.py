@@ -9,11 +9,13 @@ dots of the mean over the sites, power laws fitted to 1-90 Hz (black lines) and 
 """
 
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.font_manager import FontProperties
 from matplotlib.textpath import TextPath
 
 FONT, TITLE = 5, 7
+DISPLAY_BINS = 300      # for display, each spectrum is drawn by its lowest and highest point in each of 300 log-spaced frequency bins
 REGION = (39.28, 50.08, 159.39, 241.18)
 FX0, FXPD = 82.05, 17.13                 # x (pt) of 1 Hz and pt per decade of frequency
 PY0, PYPD = 55.09, 8.21                  # y (pt) of a power of 10^5 and pt per decade of power
@@ -183,3 +185,17 @@ def _pow10_center(ax, cx, cy, exponent):
     baseline = cy + 3.65
     ax.text(x0, baseline, base, ha="left", va="baseline", fontsize=FONT)
     ax.text(x0 + _width(base) + 0.4, baseline - 3.7, exp_s, ha="left", va="baseline", fontsize=FONT)
+
+
+def downsample_for_display(df, keys, column, n_bins=DISPLAY_BINS):
+    """Spectra for display: in each of n_bins logarithmically spaced frequency bins of each spectrum (one spectrum per value of the columns keys), the
+    points with the lowest and the highest power in column are kept, so that the peaks and the spread of the spectrum are kept. The panels and their
+    source data use this version; the power-law fits use the full-resolution spectra."""
+    kept = []
+    for _, g in df.groupby(keys, sort=False):
+        f = g["frequency_Hz"].values
+        edges = np.geomspace(f.min(), f.max() * 1.0001, n_bins + 1)
+        g = g.assign(_bin=np.digitize(f, edges) - 1)
+        rows = set(g.groupby("_bin")[column].idxmin()) | set(g.groupby("_bin")[column].idxmax())
+        kept.append(g.loc[sorted(rows)].drop(columns="_bin"))
+    return pd.concat(kept)
