@@ -1,18 +1,6 @@
-"""Reproduce the synthetic recordings S2-S5, their features and their Kilosort4 sortings (Supplementary Fig. 6c-e)
+"""Reproduce the synthetic recordings S2-S5, their features and their Kilosort4 sortings
 
 author: laquitainesteeve@gmail.com
-
-Run from the repository root:  python src/pipes/validation/synthetic/run_all.py {install,simulate,features,sort,all}
-About 1 h 30 min in total, 85 GB of temporary disk, GPU for "sort". Steps whose outputs exist are skipped.
-
-install : MEArec 1.8.0 (the version that simulated S2-S5; envs/mearec_si_0_103_0 has 1.9.0) into temp/mearec_1_8_0. In 1.8.0 the filter
-          step ADDS the filtered traces to the unfiltered ones (1.9.0 replaces them): the spikes of the paper are 1.73 times larger.
-          The patch (mearec_1_8_0_spike_traces.patch, optional) skips storing the 106 GB of unused spike traces when
-          MEAREC_SKIP_SPIKE_TRACES=1; the recordings are unchanged.
-simulate: S2-S5 with MEArec (8 jobs; 7-15 min each, S2 about 70 min), templates in temp/pros_of_details/templates.h5
-buccino_rep: Buccino's model replicated with MEArec (Fig. 2s), dataset/00_raw/recording_buccino_rep (about 23 min, 28 GB), see simulate_buccino_rep.py
-features: ground truth features of ns, buccino and S2-S5 (1-2 min each)
-sort    : Kilosort4 on S2-S5 (about 10 min each), sortings in dataset/01_intermediate/sorting/synth<N>/SortingKS4_10m
 """
 
 import argparse

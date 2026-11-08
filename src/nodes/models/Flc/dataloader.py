@@ -31,120 +31,44 @@ logging.config.dictConfig(LOG_CONF)
 logger = logging.getLogger("root")
 
 
-# def get_waveformExtractor_for_single_units(
-#     sort_path: str,
-#     study_path,
-#     save_path: str,
-#     n_sites=384,
-#     load_if_exists: bool = False,
-#     add_pca: bool = True,
-#     n_components=5,
-# ):
-#     """Setup WaveformExtractors to calculate quality metrics for single units
+# def get_waveformExtractor_for_single_units
 
-#     Args:
-#         sort_path (str): _description_
-#         study_path (_type_): _description_
-#         save_path (str): _description_
-#         n_sites (int, optional): _description_. Defaults to 384.
-#         load_if_exists: bool=False (bool)
-#         add_pca (bool): only if load_if_exists=False
+# Args
 
-#     Returns:
-#         _type_: _description_
-#     """
+# Returns
 
 #     # compute
-#     if not load_if_exists:
 
 #         # get single units
-#         Sorting = si.load_extractor(sort_path)
-#         su_ix = np.where(Sorting.get_property("KSLabel") == "good")[0]
-#         su_unit_ids = Sorting.unit_ids[su_ix]
 
 #         # load WaveformExtractor
-#         We = si.WaveformExtractor.load_from_folder(study_path)
 
 #         # create waveformExtractor for single units
-#         # which we will keep for all downstream analyses
-#         # this should speed up computations
-#         shutil.rmtree(save_path, ignore_errors=True)
-#         WeSu = We.select_units(unit_ids=su_unit_ids, new_folder=save_path)
 
 #         # setup two properties required to calculate some quality metrics
-#         WeSu.recording.set_property("gain_to_uV", np.ones((n_sites,)))
-#         WeSu.recording.set_property("offset_to_uV", np.zeros((n_sites,)))
 
 #         # add pca to waveform extractor
-#         if add_pca:
-#             _ = compute_principal_components(
-#                 waveform_extractor=WeSu,
-#                 n_components=n_components,
-#                 mode="by_channel_local",
-#                 **job_kwargs,
-#             )
-#     else:
-#         # or load existing
-#         WeSu = si.WaveformExtractor.load_from_folder(save_path)
-#     return WeSu
 
 
-# def get_waveformExtractor_for_single_units(
-#     sort_path: str,
-#     we_all_sorted_units,
-#     save_path: str,
-#     n_sites=384,
-#     load_we_all_units_if_exists: bool = True,
-#     add_pca: bool = True,
-#     n_components=5,
-#     job_kwargs={}
-# ):
-#     """Setup WaveformExtractors to calculate quality metrics for single units
+# def get_waveformExtractor_for_single_units
 
-#     Args:
-#         sort_path (str): _description_
-#         study_path (_type_): _description_
-#         save_path (str): _description_
-#         n_sites (int, optional): _description_. Defaults to 384.
-#         load_we_all_units_if_exists: bool=False (bool)
-#         add_pca (bool): only if load_if_exists=False
+# Args
 
-#     Returns:
-#         _type_: _description_
-#     """
+# Returns
 
 #     # load, else compute
-#     if load_we_all_units_if_exists:
 
-#         WeSu = si.WaveformExtractor.load_from_folder(save_path)
 
-#     else:
 
 #         # get "good" sorted single-unit ids
-#         Sorting = si.load_extractor(sort_path)
-#         su_ix = np.where(Sorting.get_property("KSLabel") == "good")[0]
-#         su_unit_ids = Sorting.unit_ids[su_ix]
 
 #         # load WaveformExtractor
-#         We = si.WaveformExtractor.load_from_folder(study_path)
-#         shutil.rmtree(save_path, ignore_errors=True)
 
 #         # create waveformExtractor for single units
-#         WeSu = We.select_units(unit_ids=su_unit_ids, new_folder=save_path)
 
 #         # setup two properties required to calculate some quality metrics
-#         WeSu.recording.set_property("gain_to_uV", np.ones((n_sites,)))
-#         WeSu.recording.set_property("offset_to_uV", np.zeros((n_sites,)))
 
 #         # add pca to waveform extractor
-#         if add_pca:
-#             _ = compute_principal_components(
-#                 waveform_extractor=WeSu,
-#                 n_components=n_components,
-#                 mode="by_channel_local",
-#                 **job_kwargs,
-#             )
-#     return WeSu
 
 
 def mad(data):
@@ -153,15 +77,7 @@ def mad(data):
 
 
 def get_mad_ratio(spike_amp, noise_amp):
-    """calculate an sd_ratio robust to outliers
-
-    Args:
-        spike_amp (_type_): _description_
-        noise_amp (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """
+    """calculate an sd_ratio robust to outliers"""
     mad_unit = mad(spike_amp)  # twice smaller than std
     mad_noise = mad(noise_amp)
     return mad_unit / mad_noise
@@ -191,16 +107,7 @@ def get_mad_ratio_all_units(unit_ids, WeNS, spike_amp):
 
 
 def add_spike_amplitude_extension(we, n_sites, load_if_exists: bool, job_kwargs:dict):
-    """Add spike amplitudes to WaveformExtractor
-
-    Args:
-        we (WaveformExtractor): _description_
-        n_sites (int): typically 384 for neuropixels
-        load_if_exists (bool): load if exists
-
-    Returns:
-        WaveformExtractor: _description_
-    """
+    """Add spike amplitudes to WaveformExtractor"""
 
     # these two properties are required to compute amplitudes
     we.recording.set_property("gain_to_uV", np.ones((n_sites,)))
@@ -222,28 +129,13 @@ def get_quality_metrics(we,
                         load_qm_if_exists=False,
                         skip_pc_metrics=True, 
                         job_kwargs:dict={}):
-    """compute cell quality metrics
-
-    Args:
-        Sorting (str): Sorting Extractor
-        study_path_all (str): path of WaveformExtractor for all sorted units
-        study_path_su (str): path of WaveformExtractor for sorted single units
-        load_qm_if_exists (bool): load quality metrics if exist
-        n_sites (int, optional): _description_. Defaults to 384.
-        skip_pc_metrics (bool): whether the PCA-based quality metrics are computed 
-        ... (isolation_distance, l_ratio, d_prime, nearest_neighbor metrics, 
-        ... silhouette_score)
-
-
-    Returns:
-        _type_: _description_
-    """
+    """compute cell quality metrics"""
     # add spike amplitudes to waveform extractor
     we = add_spike_amplitude_extension(we, n_sites=we.get_num_channels(), 
                                          load_if_exists=load_qm_if_exists, 
                                          job_kwargs=job_kwargs)
 
-    # compute quality metrics (20 secs/unit)
+    # compute quality metrics
     qmetrics = qm(
         we, 
         qm_params={
@@ -274,8 +166,7 @@ def get_quality_metrics(we,
         ]
     ]
 
-    # add quality metric (requires pca, fast)
-    # - check that pca extension exists (required for silhouette)
+    # add quality metric
     assert we.has_extension("principal_components"), """run before compute_principal_components(waveform_extractor=we, n_components=5, mode="by_channel_local")"""
 
     # - add silhouette metrics
@@ -309,16 +200,7 @@ def engineer_quality_metrics(
     single_unit_ids: np.array, we, load_qm_if_exists=False,
     job_kwargs={}
 ):
-    """Compute metrics of quality for each sorted single-unit
-
-    Args:
-        single_unit_ids (_type_): _description_
-        Sorting (_type_): _description_
-        we: waveform extractor
-
-    Returns:
-        _type_: _description_
-    """
+    """Compute metrics of quality for each sorted single-unit"""
     # pre-compute quality metrics
     print("\nComputing spikeinterface quality metrics:")
     qmetrics = get_quality_metrics(we, 
@@ -337,7 +219,7 @@ def engineer_quality_metrics(
     mad_ratio = get_mad_ratio_all_units(qmetrics.index, we, spike_amp)
     qmetrics["mad_ratio"] = mad_ratio
 
-    # spikeinterface's unit_ids are strings; cast to int here    
+    # spikeinterface's unit_ids are strings
     qmetrics.index = qmetrics.index.astype(int)
 
     # sanity check units match
@@ -354,15 +236,7 @@ def engineer_quality_metrics(
 
 
 def get_good_and_bad_units(quality_path: str, exp="NS", sorter="KS4"):
-    """filter "good" and "bad" sorted single-units
-
-    Args:
-        quality_path (str): path of a csv file listing "good", 
-        "bad" units and other spike assignment qualities.
-
-    Returns:
-        _type_: _description_
-    """
+    """filter "good" and "bad" sorted single-units"""
     
     # load table of sorted units categorized based
     # on their biases ("overmerging", "oversplitting"
@@ -389,8 +263,7 @@ def get_good_and_bad_units(quality_path: str, exp="NS", sorter="KS4"):
 
 def format_dataset(qmetric, good_unit_id, bad_unit_id, Sorting, SortingTrue, delta_time=1.3):
 
-    # compute agreement (scores) between the spike trains of
-    # sorted and ground truth units
+    # compute agreement between the spike trains of sorted and ground truth units
     scores = get_scores(SortingTrue, Sorting, delta_time=delta_time)
 
     # cast as integers to match qmetric.index
@@ -431,22 +304,7 @@ def format_dataset(qmetric, good_unit_id, bad_unit_id, Sorting, SortingTrue, del
 def load_dataset(single_unit_id, good_unit_id, bad_unit_id, Sorting,
                  SortingTrue, we, load_qm_if_exists=False, 
                  delta_time=1.3, job_kwargs={}):
-    """Engineer the dataset of quality metrics features to train the classifier
-
-    Args:
-        single_unit_id:
-        good_unit_id: 
-        bad_unit_id:
-        Sorting (_type_): sorting extractor
-        we (_type_): _description_
-        GT_ns_10m (_type_): _description_
-        add_pca (bool, optional): _description_. Defaults to False.
-        load_qm_if_exists (bool, optional): _description_. Defaults to False.
-        job_kwargs (dict, optional): _description_. Defaults to {}.
-
-    Returns:
-        dict: _description_
-    """
+    """Engineer the dataset of quality metrics features to train the classifier"""
     # engineer unit quality metrics
     qmetric = engineer_quality_metrics(
         single_unit_id, we, load_qm_if_exists=load_qm_if_exists,

@@ -1,8 +1,4 @@
-"""Simulation of synthetic recordings with MEArec (Supplementary Fig. 6c-e)
-
-Functions copied from notebooks/1_results/supp_fig6_CD_pros_of_added_details_yield_revised.ipynb.
-MEArec is imported where needed (use the environment envs/mearec_si_0_103_0).
-"""
+"""Simulation of synthetic recordings with MEArec"""
 
 import json
 import os
@@ -23,21 +19,12 @@ def set_metadata_to_mearec_simulations(recording_generator, Recording, Sorting):
         Sorting.set_property(feature, np.array(feature_data))
 
     # set electrode properties in recording extractor
-    # by default, channel_locations are attached to Recording extractor
     Recording.set_property('layer', np.array(['L5']*384)) # layer
     return Recording, Sorting
 
 
 def standardize_metadata(GroundTruth):
-    """standardize ground truth extractor metadata
-    from mearec simulatio
-
-    Args:
-        GroundTruth (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """
+    """standardize ground truth extractor metadata from mearec simulatio"""
     if 'soma_position' in GroundTruth.get_property_keys():
         GroundTruth.set_property('x', GroundTruth.get_property('soma_position')[:,0])
         GroundTruth.set_property('y', GroundTruth.get_property('soma_position')[:,1])
@@ -65,9 +52,7 @@ def standardize_metadata(GroundTruth):
 
 
 def standardize_site_location_property(Recording, zero_coord=0):
-    """
-    zero_coord: coordinate with zero values
-    """
+    """zero_coord: coordinate with zero values"""
     site_pos = Recording.get_channel_locations()
     site_pos = np.insert(site_pos, zero_coord, 0, axis=1)
     Recording.set_property('location3D', site_pos)
@@ -75,21 +60,14 @@ def standardize_site_location_property(Recording, zero_coord=0):
 
 
 def standardize_biophy_site_location_property(Recording):
-    """
-    zero_coord: coordinate with zero values
-    """
+    """zero_coord: coordinate with zero values"""
     site_pos = Recording.get_property('location')
     Recording.set_property('location3D', site_pos)
     return Recording
 
 
 def report_simulation_parameters(rec_gen):
-    """
-    Reports simulation parameters, checks for bursting, and displays example cell metadata.
-
-    Args:
-        rec_gen (RecordingGenerator): The recording generator object.
-    """
+    """Reports simulation parameters, checks for bursting, and displays example cell metadata."""
     # report parameters
     display('Simulation parameters:', rec_gen.info)
 

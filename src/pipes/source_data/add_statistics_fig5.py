@@ -2,11 +2,6 @@
 
 author: laquitainesteeve@gmail.com
 
-Reads figures/8_source_data/fig5a/fig5a_npx.xlsx and fig5a_dense.xlsx (number of single-units and multi-units of each experiment) and writes
-fig5a_statistics.xlsx (merged into Source_Data.xlsx by merge_source_data.py). The tests are those printed on the figure, computed as in the paper's
-notebook (notebooks/2_results_editorial_requests/fig5a.ipynb): Pearson's chi-square goodness-of-fit test (scipy.stats.chisquare, expected frequencies =
-mean) applied to the percentage of single-units of the compared experiments (the p values depend on this scaling).
-
 Usage:
 
     PYTHONPATH=$PWD envs/spikebias/bin/python src/pipes/source_data/add_statistics_fig5.py
@@ -16,7 +11,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-SOURCE = "figures/8_source_data/fig5a"
+SOURCE = "figures/source_data/fig5a"
 TESTS = {"M, NS, NS-2X": ["M", "NS", "NS-2X"], "M, E": ["M", "E"], "M, S": ["M", "S"], "H, DS": ["H", "DS"], "M, H": ["M", "H"], "NS, DS": ["NS", "DS"]}
 
 

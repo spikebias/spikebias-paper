@@ -3,18 +3,12 @@
 Usage:
 
     2. Activate `spikebias` environment.
-        
+
         conda activate envs/spikebias
-        
+
     3. Run the script with appropriate command-line arguments.
 
-        nohup python -m src.pipes.sorting.npx_evoked.full.treshold_crossing \
-            --recording-path dataset/00_raw/recording_npx_evoked \
-                --save-path dataset/01_intermediate/sorting/npx_evoked/SortingTC \
-                    --freq-min 300 \
-                        > out_peak_detect.log
-
-Execution time: 5 min
+        nohup python -m src.pipes.sorting.npx_evoked.full.treshold_crossing             --recording-path dataset/00_raw/recording_npx_evoked                 --save-path dataset/01_intermediate/sorting/npx_evoked/SortingTC                     --freq-min 300                         > out_peak_detect.log
 """
 import numpy as np
 import logging

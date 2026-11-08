@@ -1,11 +1,6 @@
-"""Panel of Supplementary Fig. 2a: power spectral density of the raw traces of the in vivo and simulated experiments, drawn from the source data
+"""Panel of Supplementary Fig. 2a
 
 author: laquitainesteeve@gmail.com
-
-The panel has the geometry of panel a of paper/figures/supp_fig2.pdf (sizes in pt, y down): canvas 120.1 x 191.1 pt. The axes are drawn in the
-page coordinates of the figure: frequency on a log scale (17.13 pt per decade, 1 Hz at x = 82.05 pt) and normalized power on a log scale (8.21 pt per
-decade, 10^5 at y = 55.09 pt), detached axes, ticks of the paper (major ticks at 10^1 and 10^3 Hz, minor ticks at 0.2, 0.4, 0.6 and 0.8 of each decade),
-dots of the mean over the sites, power laws fitted to 1-90 Hz (black lines) and the legend below the axes. Text is Arial 5 pt, editable.
 """
 
 import numpy as np
@@ -15,13 +10,13 @@ from matplotlib.font_manager import FontProperties
 from matplotlib.textpath import TextPath
 
 FONT, TITLE = 5, 7
-DISPLAY_BINS = 300      # for display, each spectrum is drawn by its lowest and highest point in each of 300 log-spaced frequency bins
+DISPLAY_BINS = 300
 REGION = (39.28, 50.08, 159.39, 241.18)
-FX0, FXPD = 82.05, 17.13                 # x (pt) of 1 Hz and pt per decade of frequency
-PY0, PYPD = 55.09, 8.21                  # y (pt) of a power of 10^5 and pt per decade of power
+FX0, FXPD = 82.05, 17.13                 # x of 1 Hz and pt per decade of frequency
+PY0, PYPD = 55.09, 8.21                  # y of a power of 10^5 and pt per decade of power
 AXES = dict(spine_x=74.32, y=(50.1, 130.7), x_axis_y=134.73, x=(78.37, 159.39), y_tick=4.66, x_major=4.66, x_minor=2.67)
 LW = 0.6058
-EXPERIMENTS = {      # label, colour of the dots and of the legend, legend row (dot centre y, label centre y) and left edge of the label
+EXPERIMENTS = {      # label, colour of the dots and of the legend
     "M : Marques-Smith": ((0.8, 0.8, 0.8), 195.67, 196.76, 104.93),
     "NS : Biophy. spont.": ((0.8745, 0.1216, 0.1216), 204.34, 204.66, 104.43),
     "E: Biophy. evoked": ((0.8745, 0.4941, 0.1216), 212.84, 212.65, 105.27),
@@ -31,7 +26,7 @@ EXPERIMENTS = {      # label, colour of the dots and of the legend, legend row (
 }
 DRAW_ORDER = ["H: Horvath", "NS : Biophy. spont.", "E: Biophy. evoked", "DS: Biophy. spont", "M : Marques-Smith"]
 LEGEND_DOT_X = {"M : Marques-Smith": 98.81, "NS : Biophy. spont.": 98.79, "E: Biophy. evoked": 98.95, "S: Synthetic": 99.26, "H: Horvath": 99.38, "DS: Biophy. spont": 99.56}
-DOT, EDGE = 1.8, 0.1                     # diameter (pt) of the dots and width (pt) of their white edge
+DOT, EDGE = 1.8, 0.1                     # diameter of the dots and width of their white edge
 
 
 def _width(s):
@@ -47,7 +42,7 @@ def _ctext(ax, cx, cy, s, rotation=0, bold=False, size=FONT):
 
 
 def _pow10(ax, x, y_base, exponent, align):
-    """10 to the power of an integer as two 5 pt texts (the exponent raised); align: 'right' (x is the right edge) or 'center'"""
+    """10 to the power of an integer as two 5 pt texts"""
     base, exp_s = "10", str(exponent).replace("-", "−")
     total = _width(base) + 0.4 + _width(exp_s)
     x0 = x - total if align == "right" else x - total / 2
@@ -56,7 +51,7 @@ def _pow10(ax, x, y_base, exponent, align):
 
 
 def plot_psd(df_points, df_fits):
-    """Fig. S2a from the source data: df_points (experiment, frequency_Hz, log10_power_mean_over_sites), df_fits (experiment, slope_mean, intercept_mean, band_*_Hz)"""
+    """Fig. S2a from the source data: df_points, df_fits"""
     g = AXES
     x0, y0, x1, y1 = REGION
     fig = plt.figure(figsize=((x1 - x0) / 72, (y1 - y0) / 72))
@@ -78,7 +73,7 @@ def plot_psd(df_points, df_fits):
 
     def line(xs, ys, lw=LW):
         ax.plot(xs, ys, color="k", linewidth=lw, solid_capstyle="butt")
-    # axes: y (powers of 10^5, 10^3, ... 10^-3) and x (log frequency), detached
+    # axes: y and x, detached
     line([g["spine_x"]] * 2, g["y"])
     for k, p in enumerate([5, 3, 1, -1, -3]):
         y = PY0 + k * 2 * PYPD
@@ -101,17 +96,16 @@ def plot_psd(df_points, df_fits):
 
     # legend below the axes
     for name, (color, cy_dot, cy_label, xl) in EXPERIMENTS.items():
-        text = name.replace(" :", ":")           # the paper writes "M: Marques-Smith", the source data "M : Marques-Smith"
+        text = name.replace(" :", ":")
         ax.plot([LEGEND_DOT_X[name]], [cy_dot], marker="o", markersize=4.0, markeredgewidth=0, color=color, linestyle="None")
         path = TextPath((0, 0), text, size=FONT, prop=FontProperties(family="Arial")).get_extents()
         ax.text(xl - path.x0, cy_label + (path.y0 + path.y1) / 2, text, ha="left", va="baseline", fontsize=FONT)
     return fig
 
 
-# Supplementary Fig. 2b: normalised PSD of the high-pass filtered traces in each layer (page of paper/figures/supp_fig2.pdf): canvas 277.9 x 296.8 pt
+# Supplementary Fig. 2b
 LAYERS_REGION = (199.91, 2.55, 477.76, 299.37)
-# per layer: x of the y spine, y of the x axis, y of the top and bottom of the y spine, y (pt) and exponent of the first y tick, pt per decade of power,
-# number of y ticks (two decades apart), centre of the title, centre of the y label (None: no label) and of the x label (None: no label)
+# per layer: x of the y spine, y of the x axis
 LAYERS = {
     "L1": dict(sx=241.15, ay=123.54, ys=(55.88, 120.32), yt0=70.62, e0=-3, ppd=12.96, nt=2, title=(292.7, 42.64), ylabel=(203.78, 88.55), xlabel=None),
     "L2/3": dict(sx=381.34, ay=82.48, ys=(14.82, 79.26), yt0=26.06, e0=-3, ppd=13.475, nt=2, title=(431.4, 6.2), ylabel=None, xlabel=None),
@@ -121,11 +115,11 @@ LAYERS = {
 }
 XTICK_LABELS = ("L1", "L4", "L6")            # the other panels have the ticks only
 LAYER_EXPERIMENTS = ["H: Horvath", "M : Marques-Smith", "NS : Biophy. spont.", "E: Biophy. evoked", "DS: Biophy. spont", "S: Synthetic"]
-XPD, X1HZ, AXW, AXH = 19.41, 8.77, 91.83, 64.44       # pt per decade of frequency, offset of 1 Hz from the y spine, width and height of the axes
+XPD, X1HZ, AXW, AXH = 19.41, 8.77, 91.83, 64.44       # pt per decade of frequency
 
 
 def plot_psd_layers(df_points, df_fits):
-    """Fig. S2b from the source data: df_points (layer, experiment, frequency_Hz, log10_normalised_power_mean_over_sites), df_fits (layer, experiment, slope_mean, intercept_mean, band_*_Hz)"""
+    """Fig. S2b from the source data: df_points, df_fits"""
     x0, y0, x1, y1 = LAYERS_REGION
     fig = plt.figure(figsize=((x1 - x0) / 72, (y1 - y0) / 72))
     ax = fig.add_axes([0, 0, 1, 1])
@@ -152,7 +146,7 @@ def plot_psd_layers(df_points, df_fits):
                 lf = np.log10(np.array([f["band_low_Hz"], f["band_high_Hz"]], dtype=float))
                 ax.plot(X(10 ** lf), Y(f["slope_mean"] * lf + f["intercept_mean"]), color="k", linewidth=0.721, solid_capstyle="butt", zorder=3)
 
-        # y axis (ticks two decades apart) and x axis (log frequency), detached
+        # y axis and x axis, detached
         line([sx] * 2, g["ys"])
         for k in range(g["nt"]):
             y = g["yt0"] + 2 * k * g["ppd"]
@@ -188,9 +182,7 @@ def _pow10_center(ax, cx, cy, exponent):
 
 
 def downsample_for_display(df, keys, column, n_bins=DISPLAY_BINS):
-    """Spectra for display: in each of n_bins logarithmically spaced frequency bins of each spectrum (one spectrum per value of the columns keys), the
-    points with the lowest and the highest power in column are kept, so that the peaks and the spread of the spectrum are kept. The panels and their
-    source data use this version; the power-law fits use the full-resolution spectra."""
+    """Spectra for display: in each of n_bins logarithmically spaced frequency bins of each spectrum"""
     kept = []
     for _, g in df.groupby(keys, sort=False):
         f = g["frequency_Hz"].values

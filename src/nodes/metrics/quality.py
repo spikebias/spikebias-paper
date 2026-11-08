@@ -234,7 +234,7 @@ def get_scores(
     Sorting,
     delta_time: float,
 ):
-    """Compute agreement scores between 
+    """Compute agreement scores between ground truth and sorted units
     ground truth and sorted units
 
     Args:
@@ -1014,12 +1014,11 @@ def _plot_ratio_by_layer(ax, df, cl, legend_cfg, lgd: bool, ylabel: bool, xlabel
 
     Args:
         df (_type_): _description_
-        cl (_type_): color
         legend_cfg (_type_): _description_
 
     Returns:
         _type_: _description_
-    """    
+    """
     # count classified unit qualities
     plot_df = (
         df[["quality", "layer"]]
@@ -1156,7 +1155,7 @@ def plot_ratio_by_layer(ax, df, color, lgd_cfg):
     )
     return ax
 
-# spike assignment biases (stacked from the bottom of the bar), colors as in Supplementary Fig. 5b
+# spike assignment biases, colors as in Supplementary Fig. 5b
 BIAS_ORDER = [
     "false positive",
     "good",
@@ -1183,19 +1182,7 @@ BIAS_LABELS = {
 
 
 def plot_spike_assignment_biases_grid(df_counts, sorters, sorter_titles, experiments, layers, fig_size=(6.4, 2.8)):
-    """Ratios of 'single-unit' spike assignment biases by layer (x-axis), spike sorter (columns) and ground truth simulation (rows)
-
-    Args:
-        df_counts (pd.DataFrame): number of units ("count") by "sorter", "experiment", "layer" and "quality" (spike assignment bias)
-        sorters (list): sorters (columns)
-        sorter_titles (list): titles of the columns
-        experiments (list): experiments (rows), e.g. ["S", "NS", "DS", "E"]
-        layers (list): layers (x-axis)
-        fig_size (tuple): figure size in inches
-
-    Returns:
-        fig, axes
-    """
+    """Ratios of 'single-unit' spike assignment biases by layer, spike sorter and ground truth simulation"""
     from matplotlib.patches import Patch
 
     fig, axes = plt.subplots(len(experiments), len(sorters), figsize=fig_size, sharex=True, sharey=True)
@@ -1218,7 +1205,7 @@ def plot_spike_assignment_biases_grid(df_counts, sorters, sorter_titles, experim
                         ax.text(x, bottom + pct / 2, str(int(count)), ha="center", va="center", fontsize=5, fontweight="bold" if "good" in quality else None)
                     bottom += pct
 
-            # axes (R style)
+            # axes
             ax.spines[["top", "right"]].set_visible(False)
             ax.spines["bottom"].set_visible(r == len(experiments) - 1)
             ax.spines["left"].set_visible(c == 0)

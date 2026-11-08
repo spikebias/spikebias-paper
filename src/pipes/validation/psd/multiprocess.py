@@ -1,230 +1,42 @@
-"""Computes the power spectral densities of voltage traces 
+"""Computes the power spectral densities of voltage traces
 
-author: laquitainesteeve@gmail.com 
+author: laquitainesteeve@gmail.com
 
 Uses multiprocessing on a single machine to speed up computations.
 
-Warning: 
-
-    - voltage traces are loaded in RAM, which can cause crashes if insufficient, so compute per layer
-    or use shorter recordings.
-
 Usage:
 
-    # activate virtual environment and run one of the commands below
     conda activate envs/spikebias
 
-Useful commands: htop, free -h
 
-    # ============================ Dense recordings ============================
 
-    # Simulation depth 1 (raw)
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_dense_probe1 --save-path dataset/01_intermediate/psds/psd_raw_dense_probe1.npy \
-            --gain-to-uv 0.195 --duration 2400 --layers L1 L2_3 > out_psds_sim_depth1.log
-                                
-    # Simulation depth 2 (raw)
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_dense_probe2 --save-path dataset/01_intermediate/psds/psd_raw_dense_probe2.npy \
-            --gain-to-uv 0.195 --duration 2400 --layers L4 L5 > out_psds.log
+    nohup python -m src.pipes.validation.psd.multiprocess         --recording-path dataset/00_raw/recording_dense_probe1 --save-path dataset/01_intermediate/psds/psd_raw_dense_probe1.npy             --gain-to-uv 0.195 --duration 2400 --layers L1 L2_3 > out_psds_sim_depth1.log
 
     # Simulation depth 3 (raw)
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_dense_probe3 --save-path dataset/01_intermediate/psds/psd_raw_dense_probe3.npy \
-                --gain-to-uv 0.195 --duration 2400 --layers L6 > out_psds.log
+    nohup python -m src.pipes.validation.psd.multiprocess         --recording-path dataset/00_raw/recording_dense_probe3 --save-path dataset/01_intermediate/psds/psd_raw_dense_probe3.npy                 --gain-to-uv 0.195 --duration 2400 --layers L6 > out_psds.log
 
     # Horvath depth 1 (raw)
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_horvath_probe1 --save-path dataset/01_intermediate/psds/psd_raw_horvath_probe1.npy \
-            --gain-to-uv 0.195 --duration 2400 --layers L1 L2_3 > out_psds.log
 
     # Horvath depth 2 (raw)
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_horvath_probe2 --save-path dataset/01_intermediate/psds/psd_raw_horvath_probe2.npy \
-            --gain-to-uv 0.195 --layers L4 L5 > out_psds.log
+    nohup python -m src.pipes.validation.psd.multiprocess         --recording-path dataset/00_raw/recording_horvath_probe2 --save-path dataset/01_intermediate/psds/psd_raw_horvath_probe2.npy             --gain-to-uv 0.195 --layers L4 L5 > out_psds.log
 
-    # Horvath depth 3 (raw)
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_horvath_probe3 --save-path dataset/01_intermediate/psds/psd_raw_horvath_probe3.npy \
-            --gain-to-uv 0.195 --duration 2400 --layers L6 > out_psds.log
+    nohup python -m src.pipes.validation.psd.multiprocess         --recording-path dataset/00_raw/recording_horvath_probe3 --save-path dataset/01_intermediate/psds/psd_raw_horvath_probe3.npy             --gain-to-uv 0.195 --duration 2400 --layers L6 > out_psds.log
 
 
-            
-    # fig2t: preprocessed traces ---------
+
 
     # simulation depth 1 (preprocessed)
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_dense_probe1 --save-path dataset/01_intermediate/psds/psd_prep_dense_probe1_cutoff_300.npy \
-            --gain-to-uv 0.195 --duration 2400 --preprocess True --freq-min 300 --layers L1 L2_3 > out_psds_sim_depth1.log
+    nohup python -m src.pipes.validation.psd.multiprocess         --recording-path dataset/00_raw/recording_dense_probe1 --save-path dataset/01_intermediate/psds/psd_prep_dense_probe1_cutoff_300.npy             --gain-to-uv 0.195 --duration 2400 --preprocess True --freq-min 300 --layers L1 L2_3 > out_psds_sim_depth1.log
 
-    sudo -S sh -c 'echo 1 > /proc/sys/vm/drop_caches'
 
     # simulation depth 2 (preprocessed)
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_dense_probe2 --save-path dataset/01_intermediate/psds/psd_prep_dense_probe2_cutoff_300.npy \
-            --gain-to-uv 0.195 --duration 2400 --preprocess True --freq-min 300 --layers L4 L5 > out_psds_sim_depth2.log
-    
-    sudo -S sh -c 'echo 1 > /proc/sys/vm/drop_caches'
-    
-    # simulation depth 3 (preprocessed)
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_dense_probe3 --save-path dataset/01_intermediate/psds/psd_prep_dense_probe3_cutoff_300.npy \
-            --gain-to-uv 0.195 --duration 2400 --preprocess True --freq-min 300 --layers L6 > out_psds_sim_depth3.log
+    nohup python -m src.pipes.validation.psd.multiprocess         --recording-path dataset/00_raw/recording_dense_probe2 --save-path dataset/01_intermediate/psds/psd_prep_dense_probe2_cutoff_300.npy             --gain-to-uv 0.195 --duration 2400 --preprocess True --freq-min 300 --layers L4 L5 > out_psds_sim_depth2.log
 
-    sudo -S sh -c 'echo 1 > /proc/sys/vm/drop_caches'
-
-    # horvath depth 1 (preprocessed)
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_horvath_probe1 --save-path dataset/01_intermediate/psds/psd_prep_horvath_probe1_cutoff_300.npy \
-            --gain-to-uv 0.195 --duration 2400 --preprocess True --freq-min 300 --layers L1 L2_3 > out_psds_horvath_depth1.log
-
-    sudo -S sh -c 'echo 1 > /proc/sys/vm/drop_caches'                            
-
-    # horvath depth 2 (preprocessed)
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_horvath_probe2 --save-path dataset/01_intermediate/psds/psd_prep_horvath_probe2_cutoff_300.npy \
-            --gain-to-uv 0.195 --duration 2400 --preprocess True --freq-min 300 --layers L4 L5 > out_psds_horvath_depth2.log
-
-    sudo -S sh -c 'echo 1 > /proc/sys/vm/drop_caches'
-
-    # horvath depth 3 (preprocessed)
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_horvath_probe3 --save-path dataset/01_intermediate/psds/psd_prep_horvath_probe3_cutoff_300.npy \
-            --gain-to-uv 0.195 --duration 2400 --preprocess True --freq-min 300 --layers L6 > out_psds_horvath_depth3.log
-
-    sudo -S sh -c 'echo 1 > /proc/sys/vm/drop_caches'         
-
-
-    
-
-    # fig2u: preprocessed traces ---------
-
-    # simulation depth 1 (preprocessed)
-    # note: set a limit pof 100G on RAM used to avoid crash and run in the background
-
-    # pid 3400073        
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_dense_probe1 \
-        --save-path dataset/01_intermediate/psds/psd_prep_dense_probe1_cutoff_100.npy \
-        --gain-to-uv 0.195 --duration 2400 --preprocess True \
-        --freq-min 100 --layers L1 L2_3 > out_psds_sim_depth1.log 2>&1 &
-
-    sudo -S sh -c 'echo 1 > /proc/sys/vm/drop_caches' # clear RAM
-
-    # simulation depth 2 (preprocessed) - pid 1302036
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_dense_probe2 \
-        --save-path dataset/01_intermediate/psds/psd_prep_dense_probe2_cutoff_100.npy \
-        --gain-to-uv 0.195 --duration 2400 --preprocess True \
-        --freq-min 100 --layers L4 L5 > out_psds_sim_depth2.log 2>&1 &
-    
-    sudo -S sh -c 'echo 1 > /proc/sys/vm/drop_caches'
-    
     # simulation depth 3 (preprocessed) - pid 1311004
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_dense_probe3 --save-path dataset/01_intermediate/psds/psd_prep_dense_probe3_cutoff_100.npy \
-        --gain-to-uv 0.195 --duration 2400 --preprocess True \
-        --freq-min 100 --layers L6 > out_psds_sim_depth3.log 2>&1 &
-
-    sudo -S sh -c 'echo 1 > /proc/sys/vm/drop_caches'
-
+    nohup python -m src.pipes.validation.psd.multiprocess         --recording-path dataset/00_raw/recording_dense_probe3 --save-path dataset/01_intermediate/psds/psd_prep_dense_probe3_cutoff_100.npy         --gain-to-uv 0.195 --duration 2400 --preprocess True         --freq-min 100 --layers L6 > out_psds_sim_depth3.log 2>&1 &
     # horvath depth 1 (preprocessed) - pid 1323237
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_horvath_probe1 --save-path dataset/01_intermediate/psds/psd_prep_horvath_probe1_cutoff_100.npy \
-        --gain-to-uv 0.195 --duration 2400 --preprocess True \
-        --freq-min 100 --layers L1 L2_3 > out_psds_horvath_depth1.log 2>&1 &
+    nohup python -m src.pipes.validation.psd.multiprocess         --recording-path dataset/00_raw/recording_horvath_probe1 --save-path dataset/01_intermediate/psds/psd_prep_horvath_probe1_cutoff_100.npy         --gain-to-uv 0.195 --duration 2400 --preprocess True         --freq-min 100 --layers L1 L2_3 > out_psds_horvath_depth1.log 2>&1 &
 
-    sudo -S sh -c 'echo 1 > /proc/sys/vm/drop_caches'                            
-
-    # horvath depth 2 (preprocessed) - pid 1330822
-    # requires 140GB RAM
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_horvath_probe2 --save-path dataset/01_intermediate/psds/psd_prep_horvath_probe2_cutoff_100.npy \
-        --gain-to-uv 0.195 --duration 2400 --preprocess True \
-        --freq-min 100 --layers L4 L5 > out_psds_horvath_depth2.log 2>&1 &
-
-    sudo -S sh -c 'echo 1 > /proc/sys/vm/drop_caches'
-
-    # horvath depth 3 (preprocessed) - pid 1341975
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_horvath_probe3 --save-path dataset/01_intermediate/psds/psd_prep_horvath_probe3_cutoff_100.npy \
-        --gain-to-uv 0.195 --duration 2400 --preprocess True \
-        --freq-min 100 --layers L6 > out_psds_horvath_depth3.log 2>&1 &
-
-    sudo -S sh -c 'echo 1 > /proc/sys/vm/drop_caches'         
-
-
-    # ========================= Neuropixels =========================
-
-    
-    # npx-spont --------------------------------
-    # e.g., all layers 
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_npx_spont --save-path dataset/01_intermediate/psds/psd_prep_npx_spont_cutoff_100.npy \
-            --duration 600 --layers L1 L2_3 L4 L5 L6 --gain-to-uv 1 --preprocess True --freq-min 100 --filter_window hann > out_psds.log
-
-    # e.g., per layer
-    # takes 1:30 min
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_npx_spont --save-path dataset/01_intermediate/psds/psd_prep_npx_spont_cutoff_300_layer_1.npy \
-            --duration 10000000000 --layers L1 --gain-to-uv 1 --preprocess True --bandpass-filter True --freq-min 300 --freq-max 19999 --filter_window hann > out_psds_l1.log
-
-    # npx-evoked --------------------
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_npx_evoked --save-path dataset/01_intermediate/psds/psd_prep_npx_evoked_cutoff_100.npy \
-            --duration 600 --layers L1 L2_3 L4 L5 L6 --gain-to-uv 1 --preprocess True --freq-min 100 --filter_window hann > out_psds.log        
-                    
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_npx_evoked --save-path dataset/01_intermediate/psds/psd_prep_npx_evoked_cutoff_300_layer_1.npy \
-            --duration 1000000 --layers L1 --gain-to-uv 1 --preprocess True --freq-min 300 --filter_window hann > out_psds_l1.log    
-
-    # marques-smith --------------------
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_marques_smith --save-path dataset/01_intermediate/psds/psd_prep_marques_smith_cutoff_100_layer_1.npy \
-            --duration 100000 --layers L1 --gain-to-uv 1 --preprocess True --freq-min 100 --filter_window hann > out_psds_L1.log
-         
-    # synthetic (Buccino) --------------------
-
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_buccino --save-path dataset/01_intermediate/psds/psd_prep_buccino_cutoff_300_sites_0_200.npy \
-            --duration 100000 --keep-first-n-sites 201 --gain-to-uv 1 --bandpass-filter True --preprocess True --freq-min 300 --freq-max 15999 --filter_window hann > out_psds_first.log  
-
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_buccino --save-path dataset/01_intermediate/psds/psd_prep_buccino_cutoff_300_sites_201_384.npy \
-            --duration 100000 --keep-last-n-sites 201 --gain-to-uv 1 --bandpass-filter True --preprocess True --freq-min 300 --freq-max 15999 --filter_window hann > out_psds_last.log
-
-
-    # fig2s  =======================================
-
-    # npx-spont (10 min are 9 GB)
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_npx_spont --save-path dataset/01_intermediate/psds/psd_prep_npx_spont_cutoff_100.npy \
-            --duration 600 --layers L1 L2_3 L4 L5 L6 --gain-to-uv 1 --preprocess True --freq-min 100 --filter_window hann > out_psds.log
-
-    # npx-evoked
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_npx_evoked --save-path dataset/01_intermediate/psds/psd_prep_npx_evoked_cutoff_100.npy \
-            --duration 600 --layers L1 L2_3 L4 L5 L6 --gain-to-uv 1 --preprocess True --freq-min 100 --filter_window hann > out_psds.log
-
-    # marques-smith 
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_marques_smith --save-path dataset/01_intermediate/psds/psd_prep_marques_smith_cutoff_100.npy \
-            --duration 600 --layers L1 L2_3 L4 L5 L6 --gain-to-uv 1 --preprocess True --freq-min 100 --filter_window hann > out_psds.log            
-
-    # synthetic (Buccino)
-    nohup python -m src.pipes.validation.psd.multiprocess \
-        --recording-path dataset/00_raw/recording_buccino_rep --save-path dataset/01_intermediate/psds/psd_prep_buccino_cutoff_100.npy \
-            --duration 600 --keep-first-n-sites 200 --gain-to-uv 1 --preprocess True --freq-min 100 --filter_window hann > out_psds.log
-
-                        
-Returns:
-    (.npy): writes power spectral densities
-
-Execution time: 1:30 min
-
-Required:
-
-- >170 GB RAM, which corresponds to a max Recording size of 11.44 GiB on my machine
 - output power spectrum file: 4 MB
 
 Tested on an Ubuntu 24.04.1 LTS (32 cores, 188 GB RAM, Intel(R) Core(TM) i9-14900K @3.2 GHz/5.8 GHz)
@@ -254,7 +66,7 @@ import os
 
 
 # move to PROJECT PATH
-PROJ_PATH = "/home/steeve/steeve/epfl/code/spikebias/"
+PROJ_PATH = "/home/steeve/steeve/epfl/code/spikebias-paper/"
 os.chdir(PROJ_PATH)
 
 # add custom package to path
@@ -323,7 +135,6 @@ def get_site_welch_psd(trace, site, sfreq, filter_wind):
         site: silent, automatically generated by ProcessPoolExecutor()
         sfreq (_type_): voltage trace sampling frequency
 
-
     Returns:
         _type_: _description_
     """
@@ -348,8 +159,7 @@ if __name__ == "__main__":
     """Entry point"""
 
     # add a limitation on RAM usage
-    # of 100 GB to prevent crash
-    limit_memory(float(os.environ.get("PSD_MAX_GB", 160)))      # address-space limit (GB); lower it with the environment variable PSD_MAX_GB to avoid exhausting the RAM of the machine
+    limit_memory(float(os.environ.get("PSD_MAX_GB", 160)))      # address-space limit
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Compute psds")
@@ -475,7 +285,7 @@ if __name__ == "__main__":
     Recording = Recording.remove_channels(site_ids_to_remove)
     logger.info(f"Recording after site curation: {Recording}")
 
-    # raw traces: keep the first `duration` seconds only if requested (whole recording otherwise)
+    # raw traces: keep the first `duration` seconds only if requested
     if args.slice_raw and not args.preprocess and args.duration < Recording.get_total_duration():
         Recording = Recording.frame_slice(0, int(Recording.get_sampling_frequency() * args.duration))
         logger.info(f"Raw recording cut to the first {args.duration} s")
@@ -514,7 +324,6 @@ if __name__ == "__main__":
     traces_uV = Recording.get_traces(return_scaled=True)
 
     # - Remove DC component by subtracting the mean
-    # traces = demean(traces_uV[:, sites])
     traces = demean(traces_uV)
     logger.info("Detrending done")
 

@@ -12,21 +12,7 @@ def save_dict(data, file_path: str):
 
 
 def save_crossval(metric_data: list, save_path: str, unit_ids=None, labels=None):
-    """save the cross-validated CEBRA models of a run in a folder
-
-    The folder contains:
-    - fold_000.pt, fold_001.pt, ...: the weights of the CEBRA model of each fold
-      (load with cebra.CEBRA.load(path, weights_only=False))
-    - folds.csv: for each fold, its precision and recall and the row indices of the units used for
-      training and testing (space-separated), their labels and predictions
-    - units.csv (if unit_ids is given): the sorted unit id and the label of each row of the dataset
-
-    Args:
-        metric_data (list): output of get_crossval_metrics
-        save_path (str): folder
-        unit_ids (array, optional): sorted unit id of each row of the dataset
-        labels (array, optional): label (1: good, 0: degraded) of each row of the dataset
-    """
+    """save the cross-validated CEBRA models of a run in a folder"""
     import os
     import pandas as pd
 
@@ -49,8 +35,7 @@ def save_crossval(metric_data: list, save_path: str, unit_ids=None, labels=None)
 
 
 def load_crossval_model(save_path: str, fold: int):
-    """load the CEBRA model of a fold saved by save_crossval (the file is a torch checkpoint:
-    only load files that you trust)"""
+    """load the CEBRA model of a fold saved by save_crossval"""
     import os
     return cebra.CEBRA.load(os.path.join(save_path, f"fold_{fold:03d}.pt"), weights_only=False)
     

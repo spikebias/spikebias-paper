@@ -2,19 +2,6 @@
 
 author: laquitainesteeve@gmail.com
 
-Guide to preparing final artwork (Nature research journals, https://www.nature.com/documents/NRJs-guide-to-preparing-final-artwork.pdf):
-sans-serif text, preferably Helvetica or Arial, from 5 to 7 pt; graphs as vector files with editable text (AI, EPS, PDF); images of at least
-300 dpi; RGB colours.
-
-`apply()` wraps `matplotlib.figure.Figure.savefig` so that, whatever the notebook's own settings, every saved figure:
-* uses Arial for all its text (and regular Arial for math text),
-* has its text sizes clipped to 5-7 pt,
-* keeps its text as text (svg: `svg.fonttype = "none"`; pdf and eps: TrueType fonts, `fonttype = 42`),
-* rasterizes its images at no less than 300 dpi,
-* is also saved as a .pdf next to each .svg,
-* writes the svg text with explicit font attributes (font-family="Arial", font-size, font-weight) instead of the CSS shorthand
-  "font: 5px 'Arial', ..." that Adobe Illustrator does not read (see fix_svg_fonts).
-
 Usage, at the top of a notebook (after moving to the repository):
 
     from src.nodes import figure_style
@@ -29,7 +16,7 @@ from matplotlib.figure import Figure
 from matplotlib.text import Text
 
 FONT = "Arial"
-MIN_SIZE, MAX_SIZE = 5.0, 7.0       # pt
+MIN_SIZE, MAX_SIZE = 5.0, 7.0
 MIN_DPI = 300
 
 RC = {
@@ -67,7 +54,7 @@ def format_text(fig: Figure):
             text.set_fontfamily("sans-serif")
             text.set_fontsize(_clip(text.get_fontsize()))
             weight = text.get_fontweight()
-            if isinstance(weight, (int, float)):                   # numeric weights (e.g. 1000) cannot be written as svg text
+            if isinstance(weight, (int, float)):                   # numeric weights cannot be written as svg text
                 text.set_fontweight("bold" if weight >= 600 else "normal")
 
 
@@ -76,7 +63,7 @@ _FONT = re.compile(r"font:\s*((?:(?:italic|oblique|bold|normal|\d00)\s+)*)([\d.]
 
 
 def _font_attributes(match):
-    """style="fill: #888; font: 5px 'Arial', ...; text-anchor: start"  ->  explicit attributes (fill, font-family, font-size, ...)"""
+    """style="fill: #888"""
     attrs = []
     for decl in match.group(1).split(";"):
         decl = decl.strip()
@@ -100,10 +87,7 @@ _SVG_SIZE = re.compile(r'(<svg[^>]*?)\swidth="([\d.]+)pt"\s+height="([\d.]+)pt"'
 
 
 def fix_svg_fonts(path):
-    """Make a matplotlib svg import correctly in Adobe Illustrator:
-    * the CSS font shorthand of the text is replaced by explicit attributes (font-family, font-size, ...),
-    * the size is written in unitless user units (width="176.75" instead of "176.75pt"): Illustrator reads 1 pt of a svg as 1.333 px of its
-      72 ppi canvas and places the figure 33% too large, whereas the unitless size is read as is (1 unit = 1 pt)."""
+    """Make a matplotlib svg import correctly in Adobe Illustrator"""
     with open(path, encoding="utf-8") as f:
         svg = f.read()
     fixed, n = _STYLE.subn(_font_attributes, svg)
@@ -116,7 +100,7 @@ def fix_svg_fonts(path):
 
 
 def savefig(self, fname, *args, **kwargs):
-    """Figure.savefig with the guidelines; a .svg is also saved as .pdf"""
+    """Figure.savefig with the guidelines"""
     with matplotlib.rc_context(RC):
         format_text(self)
         dpi = kwargs.get("dpi", matplotlib.rcParams["savefig.dpi"])

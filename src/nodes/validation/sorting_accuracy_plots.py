@@ -1,10 +1,6 @@
-"""Panel of Fig. 6a: sorting accuracy of the ground truth neurons ranked by accuracy, per simulation and spike sorter, drawn from the source data
+"""Panel of Fig. 6a: sorting accuracy of the ground truth neurons ranked by accuracy
 
 author: laquitainesteeve@gmail.com
-
-The panel has the geometry of panel a of the paper's figure (page 19 of paper/Laquitaine_NatureNeuro_2025.pdf). Every element is drawn in the pt
-coordinates of that page (y down), measured on the figure: the four axes (synthetic model, spontaneous and evoked Neuropixels simulations, dense probe),
-their ticks, the curves of the six sorters (1 pt), the red dashed line at 0.8 and the legend. Text is Arial 5 pt and the titles 7 pt (bold).
 """
 
 import numpy as np
@@ -17,7 +13,7 @@ COLORS = dict(zip(SORTERS, [(0.22, 0.46, 0.73), (0.96, 0.43, 0.09), (0.22, 0.65,
 THR = 0.8
 RED = (0.93, 0.12, 0.14)
 PPU_Y = 56.59                      # pt per unit of accuracy
-# per simulation: x of the first rank and pt per rank, y of the 0, x of the axis (left, right) and of its y, x ticks, x of the centre of the title, number format
+# per simulation: x of the first rank and pt per rank, y of the 0
 AXES = {
     "S": dict(x0=79.92, ppr=36.74 / 200, y0=173.23, axis=(79.92, 127.95, 176.2), ticks=[0, 200], title="Synthetic", cx=102.1),
     "NS": dict(x0=138.6, ppr=32.98 / 1000, y0=173.23, axis=(138.6, 186.63, 176.2), ticks=[0, 1000], title="Biophy. Spont", cx=160.9),
@@ -39,7 +35,7 @@ def _line(ax, xs, ys, **kw):
 
 
 def plot_source_data(df):
-    """Fig. 6a from the source data (columns simulation, sorter, rank, accuracy)"""
+    """Fig. 6a from the source data"""
     x0, y0, x1, y1 = REGION
     fig = plt.figure(figsize=((x1 - x0) / 72, (y1 - y0) / 72))
     ax = fig.add_axes([0, 0, 1, 1])
@@ -96,9 +92,6 @@ def plot_source_data(df):
     return fig
 
 
-# ---------------------------------------------------------------------------------------------------------------------------------
-# Fig. 6b: proportion of the ground truth neurons sorted with at least 80% accuracy, per sorter, across simulations
-# Geometry measured on panel b of the paper's figure (page 19): two bar charts (Neuropixels, dense probe), bars of 8.89 pt every 11.11 pt, 255.4 pt per unit.
 GLOBAL_REGION = (322.0, 70.0, 545.0, 215.0)
 GLOBAL_Y0, GLOBAL_PPU = 175.65, 255.4
 GLOBAL = {
@@ -111,7 +104,7 @@ PITCH, BAR_W = 11.11, 8.89
 
 
 def plot_global_accuracy(df):
-    """Fig. 6b from the source data (columns probe, dataset, sorter, n_well_sorted, n_ground_truth)"""
+    """Fig. 6b from the source data"""
     from scipy import stats
     x0, y0, x1, y1 = GLOBAL_REGION
     fig = plt.figure(figsize=((x1 - x0) / 72, (y1 - y0) / 72))
@@ -152,9 +145,6 @@ def plot_global_accuracy(df):
     return fig
 
 
-# ---------------------------------------------------------------------------------------------------------------------------------
-# Fig. 6c-d: sorting accuracy of the ground truth neurons (open circles) and prediction of the model (red line), ranked by predicted accuracy
-# Geometry measured on panels c and d of the paper's figure (page 19)
 GREY = (0.48, 0.49, 0.49)
 MODEL_RED = (0.93, 0.11, 0.14)
 MODEL_PPU = 51.43                                  # pt per unit of accuracy
@@ -169,7 +159,7 @@ MODEL = {
 
 
 def plot_model_accuracy(df, df_r2, panel="c"):
-    """Fig. 6c or 6d from the source data (columns rank, unit_id, sorting_accuracy, prediction; df_r2: r2_median)"""
+    """Fig. 6c or 6d from the source data"""
     g = MODEL[panel]
     x0, y0, x1, y1 = g["region"]
     fig = plt.figure(figsize=((x1 - x0) / 72, (y1 - y0) / 72))
@@ -198,7 +188,7 @@ def plot_model_accuracy(df, df_r2, panel="c"):
     if g["xlabel"]:
         _text(ax, g["xlabel"][1], g["xlabel"][2], g["xlabel"][0])
 
-    # legend (panel c), R-squared and title
+    # legend, R-squared and title
     if g["legend"]:
         ax.scatter([213.15], [225.35], s=1.95 ** 2, facecolors="w", edgecolors=GREY, linewidths=0.5, zorder=2)
         _line(ax, [210.23, 216.07], [233.93, 233.93], color=MODEL_RED, lw=3.0)
@@ -209,9 +199,6 @@ def plot_model_accuracy(df, df_r2, panel="c"):
     return fig
 
 
-# ---------------------------------------------------------------------------------------------------------------------------------
-# Fig. 6e-f: weights of the z-scored unit features of the model of sorting accuracy (bars), the weights and their stars written on the right
-# Geometry measured on panels e and f of the paper's figure (page 19). Panel f has the rows (features) of panel e: it has no feature labels.
 PINK_W = (0.95, 0.40, 0.49)
 WEIGHTS = {
     "e": dict(region=(45.0, 420.0, 252.0, 652.0), spine=108.29, spine_y=(455.05, 617.05), tick_y0=460.0, tick_dy=7.607, bar_h=6.09, zero=148.72, ppu=22.58, axis=(112.36, 193.89, 625.15),
@@ -224,8 +211,7 @@ WEIGHTS = {
 
 
 def plot_feature_weights(df, panel="e", order=None):
-    """Fig. 6e or 6f from the source data (columns feature, weight, std_error, p_value, significance, n_neurons).
-    The rows are the features sorted by weight (panel e); panel f has the order of panel e (`order`: list of features)."""
+    """Fig. 6e or 6f from the source data."""
     g = WEIGHTS[panel]
     x0, y0, x1, y1 = g["region"]
     fig = plt.figure(figsize=((x1 - x0) / 72, (y1 - y0) / 72))
@@ -266,11 +252,6 @@ def plot_feature_weights(df, panel="e", order=None):
     return fig
 
 
-# ---------------------------------------------------------------------------------------------------------------------------------
-# Fig. 6g: probability distribution of the model neuron types of the evoked biophysical ground truth (blue line) and number of neurons of each type
-# Geometry measured on panel g of the paper's figure (page 19). Text is Arial 5 pt, the title 7 pt (bold).
-# canvas: the bounding box of the panel of the paper (x from the left of 'EXC' to the right of the largest count, y from the top of the title to the bottom of the
-# x label of panel h), so that panels g and h have the same height and the same vertical origin: their rows are aligned when they are placed at the same y
 FIG6GH_Y = (233.8, 643.4)
 TYPES_REGION = (299.5, FIG6GH_Y[0], 428.62, FIG6GH_Y[1])
 TYPES = dict(spine_x=372.08, y0=300.28, dy=9.0545, x0=375.46, ppu=23.02 / 0.2, axis=(374.3, 418.77, 612.74), label_right=363.7, count_dx=1.6)
@@ -278,7 +259,7 @@ BLUE = (0.22, 0.46, 0.73)
 
 
 def plot_neuron_type_distribution(df):
-    """Fig. 6g from the source data (columns synapse_class, layer, etype, count, probability, n_neurons), rows in the order of the file"""
+    """Fig. 6g from the source data, rows in the order of the file"""
     g = TYPES
     x0, y0, x1, y1 = TYPES_REGION
     fig = plt.figure(figsize=((x1 - x0) / 72, (y1 - y0) / 72))
@@ -317,15 +298,14 @@ def plot_neuron_type_distribution(df):
     return fig
 
 
-# Fig. 6h: same rows (y) and canvas height as Fig. 6g so that the two panels line up
+# Fig. 6h: same rows and canvas height as Fig. 6g so that the two panels line up
 BIAS_COLORS = {"increased": (0.93, 0.12, 0.14), "same": (0.0, 0.0, 0.0), "reduced": (0.23, 0.30, 0.66)}
 BIAS_REGION = (432.69, FIG6GH_Y[0], 542.75, FIG6GH_Y[1])
 BIAS = dict(spine_x=433.69, x_end=542.75, y_axis=612.69, col_x0=443.0, col_dx=18.12, tick=1.46, label_dx=1.5, label_y=620.8)
 
 
 def plot_selection_biases(df):
-    """Fig. 6h from the source data (columns type_index, sorter, ratio, bias): ratio of the probability of each neuron type after spike sorting to that in
-    the ground truth, by sorter (columns) and neuron type (rows, same y positions as Fig. 6g); red/blue bold: increased/reduced probability (p < 0.05)"""
+    """Fig. 6h from the source data"""
     g, gg = BIAS, TYPES
     x0, y0, x1, y1 = BIAS_REGION
     fig = plt.figure(figsize=((x1 - x0) / 72, (y1 - y0) / 72))

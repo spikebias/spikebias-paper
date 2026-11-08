@@ -21,7 +21,7 @@ import logging.config
 import time 
 
 # set project path
-PROJ_PATH = "/home/steeve/steeve/epfl/code/spikebias"
+PROJ_PATH = "/home/steeve/steeve/epfl/code/spikebias-paper"
 os.chdir(PROJ_PATH)
 
 from src.nodes.analysis.code import igeom

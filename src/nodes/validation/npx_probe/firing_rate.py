@@ -25,8 +25,7 @@ BOXPLOT_PMS = {
 
 
 def _hist_lognorm_rows(out, layer, experiment, n):
-    """flatten a plot_firing_rate_hist_vs_lognorm() output dict into
-    long-format rows: one row per x-bin, for the source dataset export"""
+    """flatten a plot_firing_rate_hist_vs_lognorm output dict into long-format rows: one row per x-bin"""
     return [
         {
             "x": x,
@@ -296,9 +295,7 @@ def plot_fr_by_layer(axes, df_nv, df_ns, df_ne, df_nb, layers, log_x_min, log_x_
 
 
 def plot_fr_by_layer_from_df(axes, df_hist, layers, cl):
-    """re-draw the plot_fr_by_layer() panels from its exported
-    source dataset (df_hist), without recomputing the histograms
-    and lognormal fits"""
+    """re-draw the plot_fr_by_layer panels from its exported source dataset"""
 
     MARKERSIZE = 3
     EDGEWIDTH = 0.5
@@ -638,12 +635,8 @@ def bootstrap_varlogfr(firing_rate: list, N_BOOT: int, seed: int = 0):
     Args:
         firing_rate (list): _description_
         N_BOOT (int): _description_
-        seed (int, optional): seed for the bootstrap RNG, for
-            reproducibility. Defaults to 0.
 
     Returns:
-        std_boot_all (list): "N_BOOT" variances. One for each
-        distribution of firing rate bootstrapped from the
         provided "firing_rate" list
     """
     rng = random.Random(seed)
@@ -928,7 +921,7 @@ def plot_fr_std_stats_by_layer_vert(ax, df_nv, df_ns, df_ne, df_nb, layers, cl, 
     plot_data = plot_data[mask]
     plot_data = plot_data.sort_values(by=["layer"])
 
-    # number of units resampled by the bootstraps of each box (the variances of fewer than 3 Marques-Smith units are not tested, see get_stats)
+    # number of units resampled by the bootstraps of each box
     n_units = {("M", ly): int((df_nv["layer"] == ly).sum()) for ly in layers}
     n_units.update({("NS", ly): int((df_ns["layer"] == ly).sum()) for ly in layers})
     n_units.update({("E", ly): int((df_ne["layer"] == ly).sum()) for ly in layers})
@@ -1300,14 +1293,7 @@ def plot_single_unit_ratio_fixed_ns2x(
     n_single_units_sili_sp_2X: int = 193,
     n_mu_sili_sp_2X: int = 315,
 ):
-    """plot the proportions of single and multi-units
-    sorted from the neuropixels probe recording
-
-    Same as plot_single_unit_ratio() but the NS-2X unit counts are
-    hardcoded (n_single_units_sili_sp_2X, n_mu_sili_sp_2X) instead of
-    being computed from a df_silico_sp_2X dataframe, because the raw
-    sorted units for that condition are no longer available.
-    """
+    """plot the proportions of single and multi-units sorted from the neuropixels probe recording"""
     # setup figure
     shift = 0.3
     text_xpos_vivo = -0.3 + shift
@@ -1317,7 +1303,6 @@ def plot_single_unit_ratio_fixed_ns2x(
     text_xpos_sili_nb = 3.7 + shift
 
     # multi-unit and single unit
-    # colors
     color = np.array(
         [
             [1, 1, 1],
@@ -1337,7 +1322,7 @@ def plot_single_unit_ratio_fixed_ns2x(
     n_mu_sili_ev = df_silico_ev.shape[0] - n_single_units_sili_ev
     n_mu_sili_nb = df_silico_nb.shape[0] - n_single_units_sili_nb
 
-    # NS-2X total (raw data unavailable, counts are hardcoded)
+    # NS-2X total
     n_sili_sp_2X = n_single_units_sili_sp_2X + n_mu_sili_sp_2X
 
     # build dataset
@@ -1391,7 +1376,6 @@ def plot_single_unit_ratio_fixed_ns2x(
         color="k",
         rotation=0,
     )
-    # 2X
     ax.annotate(
         f"""{n_mu_sili_sp_2X}""",
         (text_xpos_sili_sp_2X, 0.6),
@@ -1570,12 +1554,7 @@ def plot_single_unit_ratio_by_drift_corr(ax, drift_corr_v100, drift_corr_rtx5090
 
 
 def get_stats(df_fr, value_col, layers, exps_order, min_units_M=None):
-    """Two-sided Mann-Whitney U test (method "auto", much faster than "exact" for large samples) of each experiment against Marques-Smith (M) in each
-    layer, on the values that are not missing (NaN). The P values of the tests of the call (one panel of one sorter) are Holm-corrected for multiple
-    comparisons: "p" is the uncorrected P, "p_holm" the corrected P and "symbol" the significance of the corrected P (empty when no test is possible).
-    With min_units_M (bootstrapped variances, whose rows give the number of units of their box in the column "n_units"), the layers with fewer than
-    min_units_M Marques-Smith units are not tested ("not_tested" True): the bootstrapped variances of one or two units take only one or two values.
-    """
+    """Two-sided Mann-Whitney U test of each experiment against Marques-Smith in each layer"""
     assert min_units_M is None or "n_units" in df_fr, "min_units_M needs the number of units of each box (column n_units)"
 
     def symbol(p):
@@ -1589,7 +1568,7 @@ def get_stats(df_fr, value_col, layers, exps_order, min_units_M=None):
         too_few = min_units_M is not None and n_units_M is not None and n_units_M < min_units_M
         for ei, targ_exp in enumerate(exps_order[1:]):
 
-            # get experiments data (missing values dropped)
+            # get experiments data
             M = rows_M[value_col].dropna().values
             target = df_fr[(df_fr["layer"] == ly) & (df_fr["experiment"] == targ_exp)][value_col].dropna().values
 
@@ -1615,7 +1594,7 @@ def get_stats(df_fr, value_col, layers, exps_order, min_units_M=None):
 
 
 def annotate_stats(ax, df, value_col, layers, exps_order, xadj=1, min_units_M=None):
-    """Annotate plot with statistical significance symbols
+    """Annotate plot with statistical significance symbols for the Mann-Whitney U test
     for the Mann-Whitney U test
 
     Args:
@@ -1625,7 +1604,6 @@ def annotate_stats(ax, df, value_col, layers, exps_order, xadj=1, min_units_M=No
         layers (_type_): _description_
         exps_order (_type_): _description_
         xadj (int, optional): _description_. Defaults to 1.
-        min_units_M (int, optional): layers with fewer Marques-Smith units are not tested (see get_stats). Defaults to None (all tested).
 
     Returns:
         _type_: _description_

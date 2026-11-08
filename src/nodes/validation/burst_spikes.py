@@ -1,7 +1,4 @@
-"""Spike waveforms within bursts of spikes (Supplementary Fig. 3c-f)
-
-Functions copied from notebooks/1_results/supp_fig3_CDEF_burst_modulation_of_spike_revised.ipynb.
-"""
+"""Spike waveforms within bursts of spikes"""
 
 import numpy as np
 from scipy.spatial.distance import cdist
@@ -22,15 +19,9 @@ def shorten_waveform(waveforms: np.array, window_to_search_peak_sec=2.5, samplin
 
 
 def align_by_neg_peak_and_crop(waves, sampling_frequency, window_to_search_peak_sec=2.5, window=100, peak_pos=50):
-    """
-    waves: array of shape (n_waveforms, n_samples) e.g. (N, 480)
-    window: number of samples in the output window (e.g. 100)
-    peak_pos: index in [0, window-1] where the negative peak will be placed (e.g. 50)
-    Returns: array of shape (n_waveforms, window), nan where the window runs beyond the edges
-    """
+    """waves: array of shape e.g. window: number of samples in the output window peak_pos: index in [0"""
 
     # find peak index in shortened waveform
-    # shorten waveform to find peak without spike collision
     short_waves, wind_start, wind_end = shorten_waveform(waves, window_to_search_peak_sec=window_to_search_peak_sec, sampling_freq=sampling_frequency)
 
     num_waves, _ = short_waves.shape
@@ -49,11 +40,11 @@ def align_by_neg_peak_and_crop(waves, sampling_frequency, window_to_search_peak_
 
     for w_ix in range(num_waves):
 
-        # desired window in original signal: [p-left, p+right)
+        # desired window in original signal: [p-left, p+right
         src_start = max(0, trough_idx[w_ix] - left)
         src_end = min(n_timepoints, trough_idx[w_ix] + right)
 
-        # where to place it in the output (shift if we clipped at edges)
+        # where to place it in the output
         dst_start = max(0, left - trough_idx[w_ix])  # how many samples we clipped on the left
         dst_end = dst_start + (src_end - src_start)
 
@@ -63,17 +54,7 @@ def align_by_neg_peak_and_crop(waves, sampling_frequency, window_to_search_peak_
 
 
 def find_bursts_isi(spike_times, isi_threshold=0.01, min_spikes=3, min_duration=0.02):
-    """Find bursts based on inter-spike interval (ISI) criterion.
-
-    Parameters:
-    spike_times: array-like, spike timestamps in seconds
-    isi_threshold: float, maximum ISI within burst (seconds)
-    min_spikes: int, minimum number of spikes to constitute a burst
-    min_duration: float, minimum burst duration (seconds)
-
-    Returns:
-    list of tuples: [(burst_start, burst_end, n_spikes, burst_duration), ...]
-    """
+    """Find bursts based on inter-spike interval criterion."""
     if len(spike_times) < min_spikes:
         return []
 
@@ -124,10 +105,7 @@ def find_bursts_isi(spike_times, isi_threshold=0.01, min_spikes=3, min_duration=
 
 
 def get_burst_first_n_waveforms(Recording, Gtruth, bursts, b_unit, sfreq, peak_pos=50, window=100, frames_before=100, frames_after=100, num_spikes=2):
-    """Waveforms of the first `num_spikes` spikes of each burst of a unit, on the site nearest to the unit, aligned on their negative peak
-
-    Returns an array (bursts, spikes, frames)
-    """
+    """Waveforms of the first `num_spikes` spikes of each burst of a unit, on the site nearest to the unit"""
 
     # find the unit's nearest electrode
     site_ids = Recording.get_channel_ids()
@@ -138,14 +116,13 @@ def get_burst_first_n_waveforms(Recording, Gtruth, bursts, b_unit, sfreq, peak_p
     dist_matrix = cdist(b_unit_coord[None], sites_coord)
     closest_site = np.argmin(dist_matrix)
 
-    # get the spike frames (timestamps) of the unit
+    # get the spike frames of the unit
     unit_spike_frames = Gtruth.get_unit_spike_train(b_unit)
 
     # store the first waves of each burst
     waves_by_burst = []
 
     # loop over each burst and collect its first spike waveforms
-    # all aligned on their negative peak at peak_pos
     for b_ix in range(len(bursts[b_unit])):
         try:
             burst = bursts[b_unit][b_ix]
@@ -162,7 +139,7 @@ def get_burst_first_n_waveforms(Recording, Gtruth, bursts, b_unit, sfreq, peak_p
                 waves.append(wave)
             waves = np.array(waves).squeeze()
 
-            # align waves at peak_pos, crop to window frames (waves, frames)
+            # align waves at peak_pos, crop to window frames
             aligned_waves = align_by_neg_peak_and_crop(np.array(waves), sfreq, window_to_search_peak_sec=2.5, window=window, peak_pos=peak_pos)
 
             # store the first waves of each burst
@@ -176,22 +153,12 @@ def get_burst_first_n_waveforms(Recording, Gtruth, bursts, b_unit, sfreq, peak_p
 
 
 def ci95(data: np.array) -> np.array:
-    """95% confidence interval of the mean along axis 0 (ignoring nan)"""
+    """95% confidence interval of the mean along axis 0"""
     return 1.96 * np.nanstd(data, axis=0) / np.sqrt(np.sum(~np.isnan(data), axis=0))
 
 
 def find_in_isi_range(spike_times, min_isi=0.01, max_isi=0.02, min_spikes=3, min_duration=0.02):
-    """Find sequences of spikes whose inter-spike intervals (ISI) are all within a range
-
-    Parameters:
-    spike_times: array-like, spike timestamps in seconds
-    min_isi, max_isi: float, ISI range (seconds)
-    min_spikes: int, minimum number of spikes in a sequence
-    min_duration: float, minimum duration of a sequence (seconds)
-
-    Returns:
-    list of tuples: [(start, end, n_spikes, duration), ...]
-    """
+    """Find sequences of spikes whose inter-spike intervals are all within a range"""
     if len(spike_times) < min_spikes:
         return []
 
@@ -236,21 +203,21 @@ def find_in_isi_range(spike_times, min_isi=0.01, max_isi=0.02, min_spikes=3, min
 
 
 def trough_width_halfmax(waveform, fs):
-    """Width (ms) of the trough of a waveform at half of its amplitude"""
+    """Width of the trough of a waveform at half of its amplitude"""
     wf = waveform
 
-    # Find trough (minimum)
+    # Find trough
     trough_idx = np.argmin(wf)
     trough_val = wf[trough_idx]
 
     # Half amplitude value
     half_val = trough_val / 2.0  # still negative
 
-    # Find left crossing (before trough)
+    # Find left crossing
     left_idx_candidates = np.where(wf[:trough_idx] > half_val)[0]
     left_idx = left_idx_candidates[-1] if len(left_idx_candidates) > 0 else 0
 
-    # Find right crossing (after trough)
+    # Find right crossing
     right_idx_candidates = np.where(wf[trough_idx:] > half_val)[0]
     right_idx = right_idx_candidates[0] + trough_idx if len(right_idx_candidates) > 0 else len(wf) - 1
 
@@ -259,12 +226,7 @@ def trough_width_halfmax(waveform, fs):
 
 
 def mean_waveforms_by_isi_range(Recording, Gtruth, unit_ids, sfreq, min_isi, max_isi, min_spikes, window_frames, num_spikes, min_duration=0.02, min_amplitude=0):
-    """Mean waveform of the first `num_spikes` spikes of the sequences with ISIs in a range, for the units with more than one sequence
-
-    Units whose mean waveforms are all nan or whose trough is shallower than `min_amplitude` are dropped.
-
-    Returns a dict {unit id: array (spikes, frames)}
-    """
+    """Mean waveform of the first `num_spikes` spikes of the sequences with ISIs in a range"""
 
     # sequences of each unit
     sequences = {u: find_in_isi_range(Gtruth.get_unit_spike_train(u) / sfreq, min_isi=min_isi, max_isi=max_isi, min_spikes=min_spikes, min_duration=min_duration) for u in unit_ids}

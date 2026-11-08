@@ -1,14 +1,10 @@
-"""Kilosort 4 on a whole recording (default: Marques-Smith, 20.25 min; or the spontaneous simulation, 34.3 min), to check whether the median firing rate depends on the duration of the sorted recording
+"""Kilosort 4 on a whole recording
 
 author: laquitainesteeve@gmail.com
 
-Same sorter parameters as src/pipes/sorting/npx_vivo/10m/ks4.py (batch size 10,000, dminx 25.6 um), on dataset/00_raw/recording_marques_smith converted to int16.
-Writes dataset/01_intermediate/sorting/marques/SortingKS4_full_check (the sorting, with the properties KSLabel, Amplitude, ContamPct, the peak channel
-"contact" and its "layer") and deletes the temporary whitened binary of Kilosort afterwards. The 10-minute sorting SortingKS4_10m is not touched.
-
 Usage (environment envs/spikebias, GPU; free disk space of at least 90 GB):
 
-    cd /home/steeve/steeve/epfl/code/spikebias
+    cd /home/steeve/steeve/epfl/code/spikebias-paper
     PYTHONPATH=$PWD envs/spikebias/bin/python src/pipes/sorting/npx_vivo/full/ks4_duration_check.py [--run npx_spont]
 """
 
@@ -23,7 +19,7 @@ import spikeinterface.sorters as ss
 
 import argparse
 
-# name: (recording, output folder, free disk space needed in GB: an int16 copy of the recording and the whitened data of Kilosort)
+# name
 RUNS = {
     "marques": ("dataset/00_raw/recording_marques_smith", "dataset/01_intermediate/sorting/marques", 90),
     "npx_spont": ("dataset/00_raw/recording_npx_spont", "dataset/01_intermediate/sorting/npx_spont", 135),
@@ -39,7 +35,7 @@ SORTER_PARAMS = {
 
 
 def peak_channels(output_folder, n_units_ids):
-    """Channel of the largest template amplitude of each cluster (most frequent template of the cluster)"""
+    """Channel of the largest template amplitude of each cluster"""
     spike_templates = np.load(f"{output_folder}/spike_templates.npy").ravel()
     spike_clusters = np.load(f"{output_folder}/spike_clusters.npy").ravel()
     templates = np.load(f"{output_folder}/templates.npy")                       # (n templates, nt, n channels)

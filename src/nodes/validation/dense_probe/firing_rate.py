@@ -109,10 +109,7 @@ def plot_single_unit_ratio(
 def plot_single_unit_ratio_with_df(
     ax, df_hv1, df_hv2, df_hv3, df_hs1, df_hs2, df_hs3
 ):
-    """same as plot_single_unit_ratio() but also returns the tidy
-    source dataset (one row per experiment x unit type) used to draw
-    the figure, for export as a source dataset
-    """
+    """same as plot_single_unit_ratio but also returns the tidy source dataset used to draw the figure"""
     ax = plot_single_unit_ratio(ax, df_hv1, df_hv2, df_hv3, df_hs1, df_hs2, df_hs3)
 
     n_su_hv = sum(sum(d["kslabel"] == "good") for d in (df_hv1, df_hv2, df_hv3))

@@ -62,13 +62,10 @@ def get_yield_per_site(sorters: list, exps: list, sort_paths: list, rec_path: st
     """get yield per site for each sorter, experiment and layer
 
     Args:
-        sorters (list): the spike sorters to test ["ks4", "ks3"...].
-        exps (list): the experiments, "S": Buccino's synthetic simulation, 
-        ... "NS": our biophysical simulation in spontaneous regime. etc..
         sort_paths (list): paths of the SortingExtractors
 
     Usage:
-    
+
         # setup
         sorters = ["ks4", "ks3", "ks2_5", "ks2", "ks", "hs"]
         exps = ["S"] * len(sorters)
@@ -77,7 +74,7 @@ def get_yield_per_site(sorters: list, exps: list, sort_paths: list, rec_path: st
         # get yields dataframe
         df = get_yield(sorters, exps, sort_paths)
         df
-        
+
     Returns:
         pd.DataFrame: yield data by layer, experiment and sorter
     """
@@ -174,26 +171,14 @@ def get_gt_yield_per_site(exp: str, gt_path: str, rec_path: str):
 
 
 def get_gt_yield_per_site_from_extractors(exp: str, SortingTrue, Recording):
-    """calculate ground truth yield per site from SpikeInterface Extractors
-
-    Args:
-        exp (str): _description_
-        SortingTrue (_type_): _description_
-        Recording (_type_): _description_
-
-    Returns:
-        _type_: _description_
-
-    Yields:
-        _type_: _description_
-    """
+    """calculate ground truth yield per site from SpikeInterface Extractors"""
 
     # layers of each true unit withing 50 ums of the probe
     df3 = pd.DataFrame()
     df3["layer"] = utils.standardize_layers(SortingTrue.get_property("layer"))
     print(df3.shape[0])
     
-    # drop silent units (can't be detected)
+    # drop silent units
     n_spikes = SortingTrue.get_total_num_spikes()
     not_silent = np.where(pd.DataFrame.from_dict(n_spikes, orient="index") > 0)[0]
     df3 = df3.iloc[not_silent]

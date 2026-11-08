@@ -1,29 +1,25 @@
-"""Panels of Fig. 2q: distribution of the trace amplitude-to-noise ratio (ANR) in each layer, drawn from the source data
+"""Panels of Fig. 2q: distribution of the trace amplitude-to-noise ratio in each layer
 
 author: laquitainesteeve@gmail.com
-
-Each layer is one panel with the geometry of panel q in paper/figures/fig2.pdf (sizes in pt): the data area is 46.8 pt wide (from the
-smallest to the largest ANR with data) and 3.8 pt per decade of probability (from 10^-7.6 to 10^0.3); the axes are detached (R style); the
-x ticks are the smallest ANR, 0 and the largest ANR; layer label in bold.
 """
 
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-SOURCE = "figures/8_source_data/fig2q/fig2q_{layer}_{exp}.xlsx"
+SOURCE = "figures/source_data/fig2q/fig2q_{layer}_{exp}.xlsx"
 LAYER_LABELS = {"l1": "L1", "l23": "L2/3", "l4": "L4", "l5": "L5", "l6": "L6"}
-# experiments in plotting order (as in the paper's notebook) and colours
+# experiments in plotting order and colours
 EXPERIMENTS = {
-    "npx_v": np.array([153, 153, 153]) / 255,   # Marques-Smith (light grey)
-    "npx_s": [0.9, 0.14, 0.15],                  # biophysical spontaneous (red)
-    "npx_e": [1, 0.49, 0],                       # biophysical evoked (orange)
-    "npx_b": [0.22, 0.5, 0.72],                  # synthetic (blue, layer 5 only)
-    "dense_v": [0.2, 0.2, 0.2],                  # Horvath (dark grey)
-    "dense_s": np.array([26, 152, 80]) / 255,    # dense-probe biophysical (green)
+    "npx_v": np.array([153, 153, 153]) / 255,   # Marques-Smith
+    "npx_s": [0.9, 0.14, 0.15],                  # biophysical spontaneous
+    "npx_e": [1, 0.49, 0],                       # biophysical evoked
+    "npx_b": [0.22, 0.5, 0.72],                  # synthetic
+    "dense_v": [0.2, 0.2, 0.2],                  # Horvath
+    "dense_s": np.array([26, 152, 80]) / 255,    # dense-probe biophysical
 }
 
-# geometry (pt), measured on panel q of paper/figures/fig2.pdf
+# geometry, measured on panel q of paper/figures/fig2.pdf
 DATA_W = 46.8           # width of the data area
 DECADE = 3.8            # height of one decade of probability
 Y_MIN, Y_MAX = 10 ** -7.6, 10 ** 0.3

@@ -5,11 +5,8 @@ author: steeve.laquitaine@epfl.ch
 Usage:
 
     sbatch cluster/validation/anr/anr_all_sites.sh
-    
-Duration: 12 minutes
 """
 
-# import libs
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.filterwarnings("ignore")
@@ -46,16 +43,7 @@ logger = logging.getLogger("root")
 
 
 def main(rank, n_ranks):
-    """Pipeline's entry point
-
-    Args:
-        rank (_type_): rank of this computer node
-        n_ranks (_type_): number of configured computed nodes in .sh file
-        
-    Returns:
-        Write amplitude-to-noise ratio pdfs for the configured experiments
-        as .npy files
-    """
+    """Pipeline's entry point"""
     
     # track time
     t_start = time.time()
@@ -63,21 +51,19 @@ def main(rank, n_ranks):
     
     logger.info("Getting dataset configs")
     
-    # neuropixels ------
-    # neuropixels (Marques)
+    # neuropixels
     cfg_nv, _ = get_config("vivo_marques", "c26").values() 
     PREP_PATH_nv = cfg_nv["preprocessing"]["output"]["trace_file_path"]
 
-    # neuropixels (biophysical model)
+    # neuropixels
     cfg_ns, _ = get_config("silico_neuropixels", "npx_spont").values()
     PREP_PATH_ns = cfg_ns["preprocessing"]["output"]["full"]["trace_file_path_gain_fitd_adj10perc_less_noise_fitd_int16"]
 
-    # neuropixels (evoked biophysical model)
+    # neuropixels
     cfg_ne, _ = get_config("silico_neuropixels", "npx_evoked").values()
     PREP_PATH_ne = cfg_ne["preprocessing"]["output"]["full"]["trace_file_path_gain_fitd_adj10perc_less_noise_fitd_int16"]
 
-    # denser probe (horvath)  ------
-    # vivo (probe 1)
+    # denser probe
     cfg_hv1, _ = get_config("vivo_horvath", "probe_1").values()
     PREP_PATH_hv1 = cfg_hv1["preprocessing"]["output"]["trace_file_path"]
     # probe 2
@@ -88,7 +74,6 @@ def main(rank, n_ranks):
     PREP_PATH_hv3 = cfg_hv3["preprocessing"]["output"]["trace_file_path"]
 
     # biophy. model
-    # (probe 1)
     cfg_hs1, _ = get_config("dense_spont", "probe_1").values()
     PREP_PATH_hs1 = cfg_hs1["preprocessing"]["output"]["trace_file_path"]
     # probe 2
@@ -144,7 +129,6 @@ def main(rank, n_ranks):
     print("available gpus:", torch.cuda.is_available())
 
     # 1 - Load silico and vivo traces
-    # neuropixels
     RecNS = si.load_extractor(PREP_PATH_ns)
     RecNV = si.load_extractor(PREP_PATH_nv)
     RecNE = si.load_extractor(PREP_PATH_ne)
@@ -158,20 +142,10 @@ def main(rank, n_ranks):
     RecHS3 = si.load_extractor(PREP_PATH_hs3)    
     
     # # test 30 secs for speed
-    # RecNS = RecNS.frame_slice(start_frame=0, end_frame=1 * 30 * SFREQ_NS)
-    # RecNV = RecNV.frame_slice(start_frame=0, end_frame=1 * 30 * SFREQ_NV)
-    # RecNE = RecNE.frame_slice(start_frame=0, end_frame=1 * 30 * SFREQ_NE)
     
     # # probe
-    # RecHV1 = RecNE.frame_slice(start_frame=0, end_frame=1 * 30 * SFREQ_HV)
-    # RecHV2 = RecNE.frame_slice(start_frame=0, end_frame=1 * 30 * SFREQ_HV)
-    # RecHV3 = RecNE.frame_slice(start_frame=0, end_frame=1 * 30 * SFREQ_HV)
-    # RecHS1 = RecNE.frame_slice(start_frame=0, end_frame=1 * 30 * SFREQ_HS)
-    # RecHS2 = RecNE.frame_slice(start_frame=0, end_frame=1 * 30 * SFREQ_HS)
-    # RecHS3 = RecNE.frame_slice(start_frame=0, end_frame=1 * 30 * SFREQ_HS)
 
     # 3. get traces
-    # neuropixels
     traces_ns = RecNS.get_traces()
     traces_nv = RecNV.get_traces()
     traces_ne = RecNE.get_traces()
@@ -184,8 +158,7 @@ def main(rank, n_ranks):
     traces_hs2 = RecHS2.get_traces()
     traces_hs3 = RecHS3.get_traces()
 
-    # 4 - get good sites (in cortex)
-    # neuropixels
+    # 4 - get good sites
     lyrs = ["L1", "L2_3", "L4", "L5", "L6"]
     # silico
     site_ly_ns = RecNS.get_property("layers")
@@ -202,27 +175,24 @@ def main(rank, n_ranks):
     sites_nv = np.where(np.isin(site_ly_nv, lyrs))[0]
 
     # horvath
-    # silico
-    # probe 1 (select L1, L2/3)
     site_ly_hs1 = RecHS1.get_property("layers")
     site_ly_hs1 = np.array(["L2_3" if x == "L2" or x == "L3" else x for x in site_ly_hs1])
     sites_hs1 = np.where(np.isin(site_ly_hs1, ["L1", "L2_3"]))[0]
-    # probe 2 (select L4 and L5)
+    # probe 2
     site_ly_hs2 = RecHS2.get_property("layers")
     sites_hs2 = np.where(np.isin(site_ly_hs2, ["L4", "L5"]))[0]
-    # probe 3 (select L6)
+    # probe 3
     site_ly_hs3 = RecHS3.get_property("layers")
     site_ly_hs3 = np.array(["L2_3" if x == "L2" or x == "L3" else x for x in site_ly_hs3])
     sites_hs3 = np.where(np.isin(site_ly_hs3, ["L6"]))[0]
 
     # vivo
-    # probe 1 (select L1, L2/3)
     site_ly_hv1 = RecHV1.get_property("layers")
     sites_hv1 = np.where(np.isin(site_ly_hv1, ["L1", "L2_3"]))[0]
-    # probe 2 (select L4, L5)
+    # probe 2
     site_ly_hv2 = RecHV2.get_property("layers")
     sites_hv2 = np.where(np.isin(site_ly_hv2, ["L4", "L5"]))[0]
-    # probe 3 (select L6)
+    # probe 3
     site_ly_hv3 = RecHV3.get_property("layers")
     sites_hv3 = np.where(np.isin(site_ly_hv3, ["L6"]))[0]
 
@@ -236,7 +206,7 @@ def main(rank, n_ranks):
     snr_hv1, snr_hv2, snr_hv3 = None, None, None
     snr_hs1, snr_hs2, snr_hs3 = None, None, None
         
-    # compute snrs and save (neuropixels probe, requires 4 computer nodes)
+    # compute snrs and save
     logger.info(f"Started on rank {rank}")
     if rank == 0:
         snr_ns = snr.get_snrs_parallel(traces_ns[:, sites_ns]).astype(np.float32)
@@ -278,7 +248,6 @@ def main(rank, n_ranks):
     logger.info(f"Running on rank {rank} done in {np.round(time.time()-t0,2)} secs")
     
     # gather max_anr and min_anr as lists
-    # node 0 data is at entry 0, 1 at 1 ...
     max_anr = comm.gather(max_anr, root=0)
     min_anr = comm.gather(min_anr, root=0)
     logger.info("Master gathered max_anr and min_anr.")
@@ -287,8 +256,6 @@ def main(rank, n_ranks):
     bins = None
     if rank == 0:
         # get the common bins across all experiments
-        # gather the mins and maxs computed from all nodes and 
-        # compute the common bins on node 0
         N_BINS = 100
         anr_max = np.max(max_anr)
         anr_min = np.min(min_anr)
@@ -297,7 +264,6 @@ def main(rank, n_ranks):
         logger.info(f"Rank {rank} - bins: {bins}")
         
     # send the bins to all nodes
-    # repeat to send the same bins to each node
     bins = [bins]*n_ranks
     bins = comm.scatter(bins, root=0)
     
@@ -355,9 +321,6 @@ def main(rank, n_ranks):
     t0 = time.time()
     
     # gather data on the master node 0
-    # note: comm.gather() collects the data in a list such that the data
-    # from the node 0 is at entry 0, from the node 1 at 1, node 2 at 2...
-    # in the list
     mean_ns = np.array(mean_ns)
     ci_ns = np.array(ci_ns)
     
@@ -397,7 +360,6 @@ def main(rank, n_ranks):
     if rank == 0:
         
         # get from node rank 1, 2 ..
-        # node that produced that data 1, 2
         mean_nv = mean_nv[1]
         ci_nv = ci_nv[1]
                 
@@ -436,15 +398,12 @@ def main(rank, n_ranks):
 
         # # unit-test probabilities
         logger.info(f"sum(mean_nv): {sum(mean_nv)} should be close to 1")
-        # assert 1 - sum(mean_nv) < 1e-15, "should sum to 1"
-        # assert 1 - sum(mean_ns) < 1e-15, "should sum to 1"
-        # assert 1 - sum(mean_ne) < 1e-15, "should sum to 1"
+        # assert 1 - sum < 1e-15, "should sum to 1"
 
         # track time
         t0 = time.time()
         
-        # Compute mean and CI over all sites pooling L1, L2/3 (probe 1), L4,5 (probe 2), L6 (probe 3) horvath
-        # pool
+        # Compute mean and CI over all sites pooling L1, L2/3, L4,5, L6 horvath
         pooled_hv = (
             by_site_hv1["pdf_by_site"] + by_site_hv2["pdf_by_site"] + by_site_hv3["pdf_by_site"]
         )

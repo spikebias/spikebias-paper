@@ -1,5 +1,4 @@
-"""Data and panels of Supplementary Fig. 7: firing rates of the sorted single-units (NS, Kilosort4) and of the ground truth neurons (GT)
-of the spontaneous biophysical simulation of Neuropixels recordings, by layer
+"""Data and panels of Supplementary Fig. 7
 
 author: laquitainesteeve@gmail.com
 """
@@ -19,16 +18,15 @@ from src.nodes.validation import firing_rate as fr
 LAYERS = ["L1", "L2/3", "L4", "L5", "L6"]
 SORTED_PATH = "dataset/01_intermediate/sorting/npx_spont/SortingKS4_10m"
 GT_PATH = "dataset/00_raw/ground_truth_npx_spont"
-DURATION = 600  # seconds (first 10 minutes of the sorting and of the ground truth)
+DURATION = 600  # seconds
 N_BINS, KERNEL_W = 31, 0.04
 LOG_BINS = np.linspace(-3, 1, N_BINS)
 
-# axes size (inches) of each panel in the paper: the figure is 7.5 x 5.5 in and its axes are [left, bottom, width, height] in fractions
 PANEL_SIZE = {"a": (3.0, 1.925), "b": (3.0, 1.925), "c": (2.25, 1.5125), "d": (2.25, 1.1), "e": (2.25, 1.1)}
 
 
 def get_firing_rates() -> pd.DataFrame:
-    """Firing rates (spikes/s) of the sorted single-units of Kilosort4 (NS) and of all the ground truth neurons (GT) in each layer"""
+    """Firing rates of the sorted single-units of Kilosort4 and of all the ground truth neurons in each layer"""
     df_ns = fr.get_sorted_unit_meta(SORTED_PATH)
     df_ns = df_ns[np.isin(df_ns["layer"], LAYERS) & (df_ns["kslabel"] == "good")]
     gt = si.load_extractor(GT_PATH)
@@ -60,7 +58,7 @@ def _gaussian_kernel_estimate(bins, rel_width):
 
 
 def get_count_ratio(df: pd.DataFrame) -> pd.DataFrame:
-    """Sorted / true neuron count in each logarithmic firing rate bin (rows: bin centers, columns: layers), panel c"""
+    """Sorted / true neuron count in each logarithmic firing rate bin, panel c"""
     flt_log = to_log10(df)
     log_df = flt_log.groupby(["experiment", "layer"])["firing rate"].apply(_gaussian_kernel_estimate(LOG_BINS, KERNEL_W))
     p_df = log_df.unstack("experiment").apply(lambda _row: _row["NS"] / (1e-1 + _row["GT"]), axis=1).unstack("layer")
@@ -80,8 +78,7 @@ def _bootstrap(smpls, n=100, m=100, func_cmp=lambda x, y: x / y):
 
 
 def get_mean_ratio(df: pd.DataFrame, log: bool, seed: int = 0) -> pd.DataFrame:
-    """Mean firing rate of the ground truth divided by that of the sorted units (log=False, panel d), or difference of the means of the
-    log10 firing rates (log=True, panel e), by layer and pooled, with a 90% confidence interval (5th and 95th percentiles of 100 bootstraps)"""
+    """Mean firing rate of the ground truth divided by that of the sorted units"""
     np.random.seed(seed)
     d = to_log10(df) if log else df
     cmp = (lambda x, y: x - y) if log else (lambda x, y: x / y)
@@ -92,7 +89,7 @@ def get_mean_ratio(df: pd.DataFrame, log: bool, seed: int = 0) -> pd.DataFrame:
 
 
 def plot_violins(ax, df: pd.DataFrame, normalized: bool):
-    """Panel a (normalized widths) and b (widths proportional to the neuron counts): violins of the log10 firing rates, GT (blue) and NS (orange)"""
+    """Panel a and b: violins of the log10 firing rates, GT and NS"""
     d = to_log10(df)
     sns.violinplot(d, x="layer", y="firing rate", split=True, hue="experiment", hue_order=["GT", "NS"], gap=0.1, width=1.0, linewidth=0.75, common_norm=False,
                    density_norm="width" if normalized else "count", cut=0 if normalized else 0.5, bw_adjust=0.75, legend=True if normalized else None, ax=ax)
@@ -114,7 +111,7 @@ def plot_count_ratio(ax, p_df: pd.DataFrame):
 
 
 def plot_mean_ratio(ax, stats: pd.DataFrame, log: bool):
-    """Panel d (log=False) and e (log=True): mean (squares), 90% confidence interval (grey) by layer, and pooled mean (dashed)"""
+    """Panel d and e: mean, 90% confidence interval by layer, and pooled mean"""
     by_layer = stats.loc[LAYERS]
     x = np.arange(len(LAYERS))
     polygon = Polygon(np.vstack([np.hstack([x, x[::-1]]), np.hstack([by_layer["5th"].values, by_layer["95th"].values[::-1]])]).T, closed=True)

@@ -1,10 +1,6 @@
-"""Panel t of Fig. 2 (AP power of the dense probe) with the statistics and the median +- 95% CI labels of the paper, from the source data
+"""Panel t of Fig. 2 with the statistics and the median +- 95% CI labels, from the source data
 
 author: laquitainesteeve@gmail.com
-
-Geometry measured on panel t of the paper's figure (pt): 27.5 pt per layer, boxes at the measured positions CENTRES, 18.6 pt per decade,
-detached axes; the median +- CI of each box is written in grey, rotated, on the left of the box; a bracket with the significance of the
-test between the two boxes of a layer (Kruskal-Wallis; ns p >= 0.05, * p < 0.05, ** p < 0.01, *** p < 0.001) is drawn above them.
 """
 
 import numpy as np
@@ -14,15 +10,13 @@ from scipy.stats import kruskal
 
 LAYERS = ["L1", "L2/3", "L4", "L5", "L6"]
 COLORS = {"H": "k", "DS": np.array([26, 152, 80]) / 255}
-LAYER_W = 27.55                      # pt per layer (distance between the ticks of the layers) on the paper's page
-DECADE = 18.6                        # pt per decade on the paper's page
-BOX_W = 4.3 / LAYER_W                # box width (4.3 pt), in layers
-# In the layout of Fig. 2 (180 mm wide) the panels are 1.2414 times larger than on the paper's page (distance of 34.2 pt between the ticks of
-# the layers in paper/figures/fig2.pdf): the geometry is scaled (plot_ap_power_dense, scale), the text stays at 5-7 pt.
+LAYER_W = 27.55
+DECADE = 18.6
+BOX_W = 4.3 / LAYER_W                # box width, in layers
 FIG2_SCALE = 34.2 / LAYER_W
-# and 0.805 times as high on the vertical axis (y spine of panels t and u: 36.0 pt in paper/figures/fig2.pdf against 44.8 pt on the paper's page)
+# and 0.805 times as high on the vertical axis
 FIG2_YSCALE = 36.0 / 44.8
-# centre of the H and DS boxes of each layer relative to the layer's tick, in pt (the boxes are not placed symmetrically in the paper)
+# centre of the H and DS boxes of each layer relative to the layer's tick, in pt
 CENTRES = {"H": [-3.55, -2.85, -4.45, -3.55, -7.65], "DS": [5.35, 4.9, 3.3, 4.0, 2.5]}
 Y_LOG = (-2.65, -0.26)               # y limits, log10
 LABEL_COLOR = (0.55, 0.55, 0.55)
@@ -35,7 +29,7 @@ def ci95(x):
 
 
 def one_digit(v):
-    """Value with one significant digit, in the format of the paper: 0.05, 7e-4 (decimals from 0.01 up, exponent below)"""
+    """Value with one significant digit, in the format: 0.05, 7e-4"""
     if v == 0:
         return "0"
     exp = int(np.floor(np.log10(abs(v))))
@@ -46,7 +40,7 @@ def one_digit(v):
 
 
 def label(x):
-    """'median ± CI' of the paper"""
+    """'median ± CI'"""
     return f"{one_digit(np.median(x))} ± {one_digit(ci95(x))}"
 
 
@@ -55,7 +49,7 @@ def stars(p):
 
 
 def plot_ap_power_dense(df, xlabel=False, scale=FIG2_SCALE, yscale=FIG2_YSCALE):
-    """Box plots of the AP power of Horvath (H) and the dense-probe model (DS) in each layer, with statistics and labels (the paper's panel t)"""
+    """Box plots of the AP power of Horvath and the dense-probe model in each layer, with statistics and labels"""
     layer_w, decade = LAYER_W * scale, DECADE * yscale
     left, right, top, bottom = 31.0 + 6.0 * (scale - 1), 8.0, 16.0, 8.0 + (8.0 if xlabel else 0.0)
     data_w = (4 + 0.5 + 0.5) * layer_w
@@ -77,14 +71,14 @@ def plot_ap_power_dense(df, xlabel=False, scale=FIG2_SCALE, yscale=FIG2_YSCALE):
                             boxprops=dict(facecolor=c, edgecolor=c, linewidth=0.5), whiskerprops=dict(color=c, linewidth=0.5),
                             capprops=dict(color=c, linewidth=0.5), medianprops=dict(color="w", linewidth=0.5),
                             flierprops=dict(marker="o", markersize=2, markerfacecolor=c, markeredgecolor=c, markeredgewidth=0.3))
-            # label (5 pt, the minimum of the guidelines): H centred on its box, DS ending just below its lower whisker, as in the paper
+            # label: H centred on its box, DS ending just below its lower whisker
             q1, q3 = np.percentile(x, [25, 75])
             low = x[x >= q1 - 1.5 * (q3 - q1)].min()
             if exp == "H":
                 ax.text(i + shift - 5.6 * scale / layer_w, np.median(x), label(x), rotation=90, ha="center", va="center", fontsize=5, color=LABEL_COLOR)
             else:
                 ax.text(i + shift - 4.0 * scale / layer_w, low * 0.8, label(x), rotation=90, ha="center", va="bottom", fontsize=5, color=LABEL_COLOR)
-        # significance of the difference between the two boxes: bracket above the highest value
+        # significance of the difference between the two boxes
         p = kruskal(pair["H"], pair["DS"]).pvalue
         top_val = max(np.percentile(pair["H"], 75) + 1.5 * (np.percentile(pair["H"], 75) - np.percentile(pair["H"], 25)),
                       np.percentile(pair["DS"], 75) + 1.5 * (np.percentile(pair["DS"], 75) - np.percentile(pair["DS"], 25)),
@@ -95,7 +89,7 @@ def plot_ap_power_dense(df, xlabel=False, scale=FIG2_SCALE, yscale=FIG2_YSCALE):
         ax.text(i + (CENTRES["H"][i] + CENTRES["DS"][i]) / 2 / LAYER_W, y * 10 ** 0.04, stars(p), ha="center", va="bottom", fontsize=7, fontweight="bold", clip_on=False)
     ax.annotate("AP power (µV²/Hz)", (0, 0.5), xycoords="axes fraction", xytext=(-15.6 * scale, 0), textcoords="offset points", rotation=90, ha="center", va="center", fontsize=6)
     ax.set_yticks([0.1, 0.01], ["", ""])
-    for val, exponent in ((0.1, "\u22121"), (0.01, "\u22122")):     # 10 and its exponent as two texts of 6 and 5 pt (a mathtext exponent would be 4.2 pt)
+    for val, exponent in ((0.1, "\u22121"), (0.01, "\u22122")):     # 10 and its exponent as two texts of 6 and 5 pt
         ax.annotate("10", (0, val), xycoords=("axes fraction", "data"), xytext=(-7, 0), textcoords="offset points", ha="right", va="center", fontsize=6)
         ax.annotate(exponent, (0, val), xycoords=("axes fraction", "data"), xytext=(-6.5, 3), textcoords="offset points", ha="left", va="center", fontsize=5)
     ax.tick_params(axis="y", which="major", length=3, width=0.5)
@@ -114,16 +108,14 @@ def plot_ap_power_dense(df, xlabel=False, scale=FIG2_SCALE, yscale=FIG2_YSCALE):
     return fig
 
 
-# ---- panel u: frequency scaling slope (alpha) of the dense probe (linear axis) ----
-UNIT = 20.0                                    # pt per unit of alpha on the paper's page (ticks 0, 1, 2)
+# ---- panel u: frequency scaling slope of the dense probe
+UNIT = 20.0
 Y_LIN = (-0.09, 2.14)                          # y limits
 CENTRES_U = {"H": [-0.25, -3.0, -5.75, -1.45, -3.15], "DS": [3.8, 1.0, -1.8, 2.7, 0.95]}
 
 
 def plot_slope_dense(df, scale=FIG2_SCALE, yscale=FIG2_YSCALE):
-    """Panel u of Fig. 2: box plots of the frequency scaling slope alpha (1/f^alpha, multi-unit band) of Horvath (H) and the dense-probe model (DS) in
-    each layer, with the statistics (Kruskal-Wallis between H and DS) and the median +- 95% CI labels of the paper; geometry as in panel u of the
-    paper, scaled to the layout of Fig. 2"""
+    """Panel u of Fig. 2"""
     layer_w, unit = LAYER_W * scale, UNIT * yscale
     left, right, top, bottom = 31.0 + 6.0 * (scale - 1), 8.0, 20.0, 26.0
     data_w = (4 + 0.5 + 0.5) * layer_w
@@ -176,5 +168,5 @@ def plot_slope_dense(df, scale=FIG2_SCALE, yscale=FIG2_YSCALE):
 
 
 def two_digits(v):
-    """Median with 2 significant digits for values of 1 and above (1.4, 1.5), 1 significant digit below (0.1), as in the paper"""
+    """Median with 2 significant digits for values of 1 and above, 1 significant digit below"""
     return f"{v:.1f}" if abs(v) >= 1 else one_digit(v)

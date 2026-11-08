@@ -1,13 +1,6 @@
-"""Statistics of the box-plot panels of Fig. 2 (m-p, r-u), written next to their source data
+"""Statistics of the box-plot panels of Fig. 2, written next to their source data
 
 author: laquitainesteeve@gmail.com
-
-For each panel, reads figures/8_source_data/fig2<panel>/fig2<panel>.xlsx and writes fig2<panel>_statistics.xlsx (merged into Source_Data.xlsx by
-merge_source_data.py) with two sheets:
-* "across_experiments": in each layer, Kruskal-Wallis test across experiments (statistic = chi-square, df, exact P; the synthetic model of Buccino,
-  recorded in layer 5 only, is not in this test, as in the paper) and Dunn's post hoc tests between pairs of experiments (two-sided, Holm-Sidak
-  adjusted exact P; all the experiments of the layer, i.e. including the synthetic model in layer 5)
-* "across_layers": in each experiment, Kruskal-Wallis test across the layers (df = 4) and Dunn's post hoc tests between pairs of layers (Holm-Sidak)
 
 Usage:
 
@@ -22,9 +15,9 @@ import pandas as pd
 import scikit_posthocs as sp
 from scipy.stats import kruskal
 
-SOURCE = "figures/8_source_data"
+SOURCE = "figures/source_data"
 LAYERS = ["L1", "L2/3", "L4", "L5", "L6"]
-# experiments of each panel, in the order of the figure (the synthetic model is last: layer 5 only)
+# experiments of each panel, in the order of the figure
 PANELS = {
     "m": ["npx (Marques-Smith)", "Biophy. spont.", "Biophy. evoked", "Synth. (Buccino)"],
     "n": ["npx (Marques-Smith)", "Biophy. spont.", "Biophy. evoked", "Synth. (Buccino)"],
@@ -55,7 +48,7 @@ def statistics(panel):
     df = pd.read_excel(f"{SOURCE}/fig2{panel}/fig2{panel}.xlsx")
     value, layer_col, exp_col = columns(df)
     present = [e for e in PANELS[panel] if e in set(df[exp_col])]
-    kw_exps = [e for e in present if df[df[exp_col] == e][layer_col].nunique() > 1]       # without the synthetic model (layer 5 only)
+    kw_exps = [e for e in present if df[df[exp_col] == e][layer_col].nunique() > 1]       # without the synthetic model
 
     def values(exp, layer):
         return df[(df[exp_col] == exp) & (df[layer_col] == layer)][value].dropna().values

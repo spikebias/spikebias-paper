@@ -1,14 +1,10 @@
-"""Sort the first 10 minutes of a synthetic simulation (S2-S5) with Kilosort 4.0 (Supplementary Fig. 6d-e)
+"""Sort the first 10 minutes of a synthetic simulation with Kilosort 4.0
 
 author: laquitainesteeve@gmail.com
 
-Same sorting parameters as src/pipes/sorting/npx_synth3/ks4.py (batch size 10,000, dminx 25.6 um). The sorting is written in
-dataset/01_intermediate/sorting/synth<N>/SortingKS4_10m with the metadata used by the analyses (layer, firing rates, KSLabel). The
-waveform extraction of the paper's script is skipped: it is not needed for the yield and the sorting accuracy.
-
 Usage (environment envs/spikebias, GPU):
 
-    cd /home/steeve/steeve/epfl/code/spikebias
+    cd /home/steeve/steeve/epfl/code/spikebias-paper
     PYTHONPATH=$PWD envs/spikebias/bin/python src/pipes/validation/synthetic/sort_ks4.py --name s3
 """
 
@@ -21,7 +17,7 @@ import numpy as np
 import spikeinterface as si
 import torch
 
-PROJ_PATH = "/home/steeve/steeve/epfl/code/spikebias/"
+PROJ_PATH = "/home/steeve/steeve/epfl/code/spikebias-paper/"
 os.chdir(PROJ_PATH)
 sys.path.append(os.path.join(PROJ_PATH, "src"))
 from src.nodes.sorting import sort_and_postprocess_10m
@@ -32,9 +28,7 @@ SORTER = "kilosort4"
 NUMBERS = {"s2": 2, "s3": 3, "s4": 4, "s5": 5}
 LAYER = "L5"  # all sites are in layer 5
 
-# these are the default parameters for spikeinterface 0.100.5 (as in src/pipes/sorting/npx_synth3/ks4.py)
-# - we set batch_size to 10,000 instead of 60,0000 due to memory constrains
-# - we set dminx to 25.6 um instead of None
+# these are the default parameters for spikeinterface 0.100.5
 SORTER_PARAMS = {
     "batch_size": 10000,
     "nblocks": 1,
@@ -90,7 +84,7 @@ if __name__ == "__main__":
     os.makedirs(os.path.dirname(sorting_path), exist_ok=True)
     torch.cuda.empty_cache()
 
-    # spike sort the first 10 minutes (the int16 binary copy of the recording is written in the temporary folder)
+    # spike sort the first 10 minutes
     sort_and_postprocess_10m(cfg, SORTER, SORTER_PARAMS, duration_sec=REC_SECS, is_sort=True, is_postpro=False, extract_wvf=False,
                              copy_binary_recording=True, remove_bad_channels=True, bad_channel_ids=None)
 

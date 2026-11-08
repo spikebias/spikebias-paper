@@ -1,11 +1,6 @@
-"""Panel of Fig. 7b: manifold information capacity of the ground truth and of the sorted populations, drawn from the source data
+"""Panel of Fig. 7b: manifold information capacity of the ground truth and of the sorted populations
 
 author: laquitainesteeve@gmail.com
-
-The panel has the geometry of panel b of the paper's figure (page 22 of paper/Laquitaine_NatureNeuro_2025.pdf): canvas 160.5 x 134.5 pt (bounding
-box of the panel with its title, panel letter excluded). Every element is drawn in the pt coordinates of that page (y down): the y axis (153.2 pt per
-unit of capacity / lower bound, 1.0 at y = 371.71 pt), the eight notched box plots (11.76 pt apart, 5.76 pt wide, filled black), the red dashed
-mean of the ground truth and the blue dashed chance level, and the labels. Text is Arial 5 pt and the title 7 pt (bold), editable.
 """
 
 import numpy as np
@@ -18,21 +13,21 @@ from matplotlib.transforms import Affine2D
 FONT, TITLE = 5, 7
 REGION = (49.63, 271.7, 210.1, 406.16)
 POPULATIONS = ["Ground\ntruth", "KS4", "KS3", "KS2.5", "KS2", "KS", "HS", "TC"]
-Y1, PPU = 371.71, 153.2                 # y (pt) of a capacity of 1.0, pt per unit of capacity
+Y1, PPU = 371.71, 153.2                 # y of a capacity of 1.0, pt per unit of capacity
 X0, DX, BOX_W = 95.72, 11.76, 5.76      # x of the first box, spacing and width
 AXIS = dict(spine_x=78.96, y=(318.07, 373.24), x_axis_y=376.0, x=(83.96, 183.9), tick=1.49)
 YTICKS = [1.3, 1.2, 1.1, 1.0]
 LINES = (89.84, 183.9)
 RED, BLUE = (1.0, 0.0, 0.0), (0.0, 0.698, 1.0)
 BLUE_TEXT = (0.0, 0.498, 0.8235)
-# centres (pt) of the tick labels (30 deg) of the populations: 'Ground' and 'truth' are two lines
+# centres of the tick labels of the populations
 XLABELS = {"Ground\ntruth": [("Ground", 94.14, 387.5), ("truth", 97.14, 393.66)], "KS4": [("KS4", 107.0, 385.76)], "KS3": [("KS3", 118.8, 385.86)],
            "KS2.5": [("KS2.5", 130.55, 386.92)], "KS2": [("KS2", 142.51, 385.81)], "KS": [("KS", 154.05, 385.03)], "HS": [("HS", 165.82, 385.1)],
            "TC": [("TC", 177.42, 384.75)]}
 
 
 def _ctext(ax, cx, cy, s, size=FONT, bold=False, rotation=0, color="k"):
-    """Text whose ink bounding box (after the rotation, in degrees counter-clockwise) is centred on (cx, cy)"""
+    """Text whose ink bounding box is centred on (cx, cy)"""
     path = TextPath((0, 0), s, size=size, prop=FontProperties(family="Arial", weight="bold" if bold else "normal"))
     ext = path.transformed(Affine2D().rotate_deg(rotation)).get_extents()
     ax.text(cx - (ext.x0 + ext.x1) / 2, cy + (ext.y0 + ext.y1) / 2, s, ha="left", va="baseline", rotation=rotation, rotation_mode="anchor",
@@ -44,7 +39,7 @@ def _line(ax, xs, ys, **kw):
 
 
 def plot_information_capacity(df):
-    """Fig. 7b from the source data (columns population, bootstrap, capacity_over_lower_bound)"""
+    """Fig. 7b from the source data"""
     x0, y0, x1, y1 = REGION
     fig = plt.figure(figsize=((x1 - x0) / 72, (y1 - y0) / 72))
     ax = fig.add_axes([0, 0, 1, 1])
@@ -53,7 +48,7 @@ def plot_information_capacity(df):
     ax.axis("off")
     to_y = lambda v: Y1 - (np.asarray(v) - 1.0) * PPU
 
-    gt_mean = df[df["population"] == POPULATIONS[0]]["capacity_over_lower_bound"].mean()    # the paper's dashed line is the mean of the 200 bootstraps
+    gt_mean = df[df["population"] == POPULATIONS[0]]["capacity_over_lower_bound"].mean()
     for y, color in [(to_y(gt_mean), RED), (Y1, BLUE)]:
         ax.plot(LINES, [y, y], color=color, linewidth=1.0, linestyle=(0, (3.7, 1.6)), zorder=1)
     values = [to_y(df[df["population"] == p]["capacity_over_lower_bound"].values) for p in POPULATIONS]
@@ -89,13 +84,13 @@ def plot_information_capacity(df):
     _ctext(ax, 150.28, 317.48, "Ground truth", color=RED)
     _ctext(ax, 151.32, 325.64, "mean capacity", color=RED)
     _ctext(ax, 99.55, 365.83, "Chance", color=BLUE_TEXT)
-    # title on two lines (at 7 pt the paper's single line, 148 pt wide at 6 pt, would be wider than the panel)
+    # title on two lines
     _ctext(ax, 135.95, 274.5, "Spike sorting reduces stimulus", size=TITLE, bold=True)
     _ctext(ax, 135.95, 282.9, "information capacity", size=TITLE, bold=True)
     return fig
 
 
-# Fig. 7f: capacity of the ground truth under the undersampling and the selection bias of each sorter (page 22): canvas 116.8 x 120.5 pt
+# Fig. 7f: capacity of the ground truth under the undersampling and the selection bias of each sorter
 SAMPLING_REGION = (421.31, 288.01, 538.09, 408.54)
 SAMPLING = dict(spine_x=450.64, y=(318.76, 373.93), x_axis_y=376.69, x=(454.8, 538.09), tick=1.49, y1=372.88, ppu=105.35, x_gt=456.33, tick_x0=458.48, tick_dx=12.245,
                 offset=2.145, box_w=3.0, lines=(452.35, 538.09), yticks=[1.4, 1.2, 1.0])
@@ -105,7 +100,7 @@ SAMPLING_SORTERS = ["KS4", "KS3", "KS2.5", "KS2", "KS", "HS"]
 
 
 def plot_sampling_capacity(df):
-    """Fig. 7f from the source data (columns population, sampling_scheme, bootstrap, capacity_over_lower_bound)"""
+    """Fig. 7f from the source data"""
     g = SAMPLING
     x0, y0, x1, y1 = SAMPLING_REGION
     fig = plt.figure(figsize=((x1 - x0) / 72, (y1 - y0) / 72))
@@ -149,7 +144,7 @@ def plot_sampling_capacity(df):
         if i == 0:
             _ctext(ax, xt - 1.58, g["x_axis_y"] + 11.5, "ground", rotation=30)
             _ctext(ax, xt + 1.42, g["x_axis_y"] + 17.66, "truth", rotation=30)
-        else:       # the top right corner of the rotated label is 3.6 pt right of the tick and 5.6 pt below the axis
+        else:
             path = TextPath((0, 0), lab, size=FONT, prop=FontProperties(family="Arial")).transformed(Affine2D().rotate_deg(30)).get_extents()
             ax.text(xt + g.get("label_dx", 3.6) - path.x1, g["x_axis_y"] + 5.6 + path.y1, lab, ha="left", va="baseline", rotation=30, rotation_mode="anchor", fontsize=FONT)
 
@@ -165,7 +160,7 @@ def plot_sampling_capacity(df):
     return fig
 
 
-# Fig. 7g: capacity of the ground truth, of the 'good + merged + partial' units and of the degraded units of each sorter (page 22): canvas 124.6 x 117.0 pt
+# Fig. 7g: capacity of the ground truth
 QUALITY_REGION = (61.45, 456.52, 186.04, 573.53)
 QUALITY = dict(spine_x=88.2, y=(481.56, 536.73), x_axis_y=539.49, x=(92.36, 175.64), tick=1.49, y1=514.65, ppu=47.34, x_gt=95.52, tick_x0=98.31, tick_dx=11.9,
                white_dx=2.78, box_w=1.95, red_line=(92.36, 181.59), blue_line=(92.36, 175.64), yticks=[1.5, 1.0])
@@ -179,7 +174,7 @@ def _ltext(ax, x, cy, s, size=FONT):
 
 
 def plot_quality_capacity(df):
-    """Fig. 7g from the source data (columns population, unit_class, bootstrap, capacity_over_lower_bound)"""
+    """Fig. 7g from the source data"""
     g = QUALITY
     x0, y0, x1, y1 = QUALITY_REGION
     fig = plt.figure(figsize=((x1 - x0) / 72, (y1 - y0) / 72))
@@ -238,8 +233,7 @@ def plot_quality_capacity(df):
     return fig
 
 
-# Fig. 7h, 7i: manifold radius and dimension of the ground truth and of the sorted populations (page 22): black notched box plots, red dashed mean of the
-# ground truth. Canvas 110.25 x 92.57 pt (7h) and 108.58 x 113.97 pt (7i, with the title "200 bootstraps")
+# Fig. 7h, 7i: manifold radius and dimension of the ground truth and of the sorted populations
 RADIUS = dict(
     region=(195.52, 480.21, 305.77, 572.78), column="manifold_radius", spine_x=218.31, y=(480.21, 535.38), x_axis_y=538.14, x=(222.48, 305.77), tick=1.49,
     y0=500.01, v0=0.8, ppu=232.9, x_box=[227.68, 238.09, 248.5, 258.91, 269.32, 279.74, 290.15, 300.56], tick_x=[226.19, 238.09, 248.5, 258.91, 269.32, 279.74, 290.15, 300.56],
@@ -289,7 +283,7 @@ def _population_panel(df, g):
         if pop.startswith("Ground"):
             _ctext(ax, *g["gt_label"][0], "Ground", rotation=30)
             _ctext(ax, *g["gt_label"][1], "truth", rotation=30)
-        else:       # the top right corner of the rotated label is 3.6 pt right of the tick and 5.6 pt below the axis
+        else:
             path = TextPath((0, 0), pop, size=FONT, prop=FontProperties(family="Arial")).transformed(Affine2D().rotate_deg(30)).get_extents()
             ax.text(xt + g.get("label_dx", 3.6) - path.x1, g["x_axis_y"] + 5.6 + path.y1, pop, ha="left", va="baseline", rotation=30, rotation_mode="anchor", fontsize=FONT)
     _ctext(ax, g["ylabel"][1], g["ylabel"][2], g["ylabel"][0], rotation=90)
@@ -300,15 +294,15 @@ def _population_panel(df, g):
 
 
 def plot_radius(df):
-    """Fig. 7h from the source data (columns population, bootstrap, manifold_radius)"""
+    """Fig. 7h from the source data"""
     return _population_panel(df, RADIUS)
 
 
 def plot_dimension(df):
-    """Fig. 7i from the source data (columns population, bootstrap, manifold_dimension)"""
+    """Fig. 7i from the source data"""
     return _population_panel(df, DIMENSION)
 
 
 def plot_correlation(df):
-    """Fig. 7j from the source data (columns population, bootstrap, center_correlation)"""
+    """Fig. 7j from the source data"""
     return _population_panel(df, CORRELATION)

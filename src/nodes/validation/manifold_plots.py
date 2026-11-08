@@ -1,12 +1,6 @@
-"""Panel of Fig. 7a: neural manifolds of the ground truth and of the sorted populations, drawn from the source data
+"""Panel of Fig. 7a: neural manifolds of the ground truth and of the sorted populations
 
 author: laquitainesteeve@gmail.com
-
-The panel has the geometry of panel a of the paper's figure (page 22 of paper/Laquitaine_NatureNeuro_2025.pdf): canvas 488.5 x 160.5 pt (the
-bounding box of the panel on the page, panel letter excluded). Every element is placed at its position on that page (pt, y down): the eight 2D
-manifolds (top row, points averaged over the trials of each direction) and the eight 3D manifolds (bottom row, one point per trial), each fitted in
-the rectangle of the paper's image, the latent axes, the titles and the colour bar of the stimulus direction (359 to 0 deg). Text is Arial 5 pt and
-the figure title 7 pt (bold), editable. The 3D manifolds are rendered as images (300 dpi or more), as in the paper.
 """
 
 import io
@@ -19,15 +13,15 @@ from matplotlib.textpath import TextPath
 FONT, TITLE = 5, 7
 REGION = (49.4, 87.9, 537.93, 248.4)
 POPULATIONS = ["Ground truth", "KS4", "KS3", "KS2.5", "KS2", "KS", "HS", "TC"]
-# rectangles (x0, y0, x1, y1) of the paper's images, 2D (top row) and 3D (bottom row) manifolds
+# rectangles's images, 2D and 3D manifolds
 RECTS_2D = [(61.68, 115.56, 107.19, 157.93), (123.49, 115.56, 165.49, 154.68), (181.15, 120.32, 229.8, 158.94), (242.96, 119.32, 288.6, 154.55),
             (310.74, 116.19, 359.76, 158.94), (376.93, 118.32, 418.68, 153.68), (432.21, 119.2, 477.97, 156.06), (496.23, 116.06, 536.73, 159.95)]
 RECTS_3D = [(55.63, 173.31, 108.82, 214.33), (119.87, 177.49, 180.95, 213.85), (186.26, 173.19, 233.73, 216.72), (242.56, 171.94, 299.88, 215.11),
             (308.07, 175.04, 372.55, 215.52), (384.79, 178.27, 416.67, 214.45), (431.66, 178.09, 477.15, 221.07), (495.13, 174.5, 537.93, 226.45)]
-# origins of the latent axes: 2D (right and up arrows) and 3D (up, up-right and down-right arrows)
+# origins of the latent axes: 2D and 3D
 ORIGINS_2D = [(59.8, 164.54), (115.73, 164.77), (170.96, 164.02), (234.39, 163.28), (301.56, 163.28), (369.48, 164.02), (423.21, 164.77), (485.16, 163.28)]
 ORIGINS_3D = [(56.22, 215.38), (116.33, 217.42), (172.3, 215.93), (237.98, 215.18), (303.65, 214.44), (370.82, 215.18), (421.57, 215.18), (485.0, 214.44)]
-# centres of the titles of the populations (one or two lines)
+# centres of the titles of the populations
 TITLES = {
     "Ground truth": [("Ground truth", 81.45, 102.6)],
     "KS4": [("Kilosort 4", 140.9, 102.6), ("(KS4)", 141.75, 111.9)],
@@ -39,7 +33,7 @@ TITLES = {
     "TC": [("Multiunit threshold", 512.7, 102.05), ("crossing (TC)", 513.6, 111.3)],
 }
 BAR = dict(x=(275.97, 336.66), y=(246.0, 248.37), ticks=[276.0, 291.1, 306.3, 321.5, 336.7], labels=["359", "270", "180", "90", "0"])
-MARKER = 5.2          # marker area (pt^2), diameter 2.3 pt
+MARKER = 5.2          # marker area, diameter 2.3 pt
 DPI_3D = 600
 
 
@@ -71,7 +65,7 @@ def _latent_axes_3d(ax, o):
 
 
 def _render_3d(d3, width, height):
-    """3D manifold of the trials, rendered at DPI_3D with the extent of the point cloud fitted in a (width x height) pt rectangle: (rgba, w, h in pt)"""
+    """3D manifold of the trials, rendered at DPI_3D with the extent of the point cloud fitted in a pt rectangle"""
     xyz = d3[["latent_1", "latent_2", "latent_3"]].values
     lo, hi = xyz.min(axis=0), xyz.max(axis=0)
     zoom = 1.0
@@ -95,7 +89,7 @@ def _render_3d(d3, width, height):
 
 
 def plot_manifolds(df_3d, df_2d):
-    """Fig. 7a from the source data: df_3d (population, trial, direction_deg, latent_1-3) and df_2d (population, direction_deg, latent_1, latent_2)"""
+    """Fig. 7a from the source data: df_3d and df_2d"""
     x0, y0, x1, y1 = REGION
     fig = plt.figure(figsize=((x1 - x0) / 72, (y1 - y0) / 72))
     ax = fig.add_axes([0, 0, 1, 1])
@@ -103,9 +97,9 @@ def plot_manifolds(df_3d, df_2d):
     ax.set_ylim(y1, y0)
     ax.axis("off")
 
-    r = np.sqrt(MARKER) / 2                     # marker radius (pt)
+    r = np.sqrt(MARKER) / 2                     # marker radius
     for j, pop in enumerate(POPULATIONS):
-        # 2D manifold: the point cloud fitted (equal scales) in the rectangle of the paper's image
+        # 2D manifold: the point cloud fitted in the rectangle's image
         d2 = df_2d[df_2d["population"] == pop]
         rx0, ry0, rx1, ry1 = RECTS_2D[j]
         xs, ys = d2["latent_1"].values, d2["latent_2"].values
@@ -116,7 +110,7 @@ def plot_manifolds(df_3d, df_2d):
         ax.scatter(px, py, c=d2["direction_deg"], cmap="hsv", edgecolors="w", linewidths=0.2, s=MARKER, rasterized=True, zorder=2)
         _latent_axes_2d(ax, ORIGINS_2D[j])
 
-        # 3D manifold: rendered image fitted in the rectangle of the paper's image
+        # 3D manifold: rendered image fitted in the rectangle's image
         d3 = df_3d[df_3d["population"] == pop]
         bx0, by0, bx1, by1 = RECTS_3D[j]
         img, w, h = _render_3d(d3, bx1 - bx0, by1 - by0)
@@ -127,14 +121,14 @@ def plot_manifolds(df_3d, df_2d):
         for s, cx_, cy_ in TITLES[pop]:
             _ctext(ax, cx_, cy_, s)
 
-    # latent axes labels (first column)
+    # latent axes labels
     _ctext(ax, 54.9, 152.0, "Latent 2", rotation=90)
     _ctext(ax, 71.3, 168.65, "Latent 1")
     _ctext(ax, 51.6, 207.1, "Latent 3", rotation=90)
     _ctext(ax, 77.3, 213.55, "Latent 1")
     _ctext(ax, 65.3, 222.95, "Latent 2")
 
-    # colour bar of the stimulus direction (359 to 0 deg, left to right)
+    # colour bar of the stimulus direction
     bx0, bx1 = BAR["x"]
     by0, by1 = BAR["y"]
     ax.imshow(np.linspace(1, 0, 256)[None, :], cmap="hsv", vmin=0, vmax=1, extent=(bx0, bx1, by1, by0), aspect="auto", zorder=2)
@@ -148,15 +142,15 @@ def plot_manifolds(df_3d, df_2d):
     return fig
 
 
-# Fig. 7c: 3D manifold of the ground truth (page 22): canvas 48.8 x 67.8 pt (panel letter excluded, the title shared by panels c-f is not part of it)
+# Fig. 7c: 3D manifold of the ground truth: canvas 48.8 x 67.8 pt
 GT_PANEL = dict(region=(211.06, 307.87, 259.82, 375.7), rect=(211.1, 334.5, 259.82, 372.12), origin=(212.35, 371.25), titles=[("Ground truth", 234.36, 310.19)])
-# Fig. 7d: ground truth subjected to the undersampling of Kilosort 4: canvas 52.5 x 76.9 pt
+# Fig. 7d: ground truth subjected to the undersampling of Kilosort 4
 UNDERSAMPLED_PANEL = dict(region=(273.07, 298.8, 325.56, 375.7), rect=(280.6, 333.43, 325.56, 373.91), origin=(274.37, 371.34),
                           titles=[("Ground truth", 299.64, 301.12), ("subjected to KS4", 299.75, 309.22), ("undersampling", 300.77, 316.76)])
 
 
 def plot_single_manifold(df_3d, panel=GT_PANEL):
-    """One 3D manifold of the trials (columns direction_deg, latent_1-3), title and latent axes at the paper's positions"""
+    """One 3D manifold of the trials, with its title and latent axes"""
     x0, y0, x1, y1 = panel["region"]
     fig = plt.figure(figsize=((x1 - x0) / 72, (y1 - y0) / 72))
     ax = fig.add_axes([0, 0, 1, 1])
@@ -173,7 +167,7 @@ def plot_single_manifold(df_3d, panel=GT_PANEL):
     return fig
 
 
-# Fig. 7e: ground truth subjected to the undersampling and the selection biases of Kilosort 4: canvas 59.6 x 75.8 pt
+# Fig. 7e: ground truth subjected to the undersampling and the selection biases of Kilosort 4
 SELECTED_PANEL = dict(region=(341.58, 299.29, 401.22, 375.1), rect=(349.68, 333.97, 391.59, 371.76), origin=(342.87, 370.7),
                       titles=[("Ground truth", 372.89, 301.6), ("subjected to KS4", 374.05, 309.7), ("undersampling and", 372.97, 317.24),
                               ("selection bias", 374.07, 324.2)])

@@ -1,10 +1,6 @@
-"""Single-unit and multi-unit counts of Supplementary Fig. 9 (effect of the drift correction on the yield of Kilosort 4, 3 and 2.5)
+"""Single-unit and multi-unit counts of Supplementary Fig. 9
 
 author: laquitainesteeve@gmail.com
-
-The figure annotates every bar with its number of sorted units. These numbers are the text of the paper's pdf (vector text, nothing is
-digitized from pixels) and are read with `pdftotext -bbox`. The sortings of the two RTX 5090 columns are not stored anywhere, so these counts
-are the only record of them; the V100 column is also recomputed from the sortings in dataset/01_intermediate/sorting/ for a check.
 """
 
 import re
@@ -19,11 +15,10 @@ DATASETS = ["M", "NS", "S"]                     # columns
 CONDITIONS = ["+ (V100)", "+ (rtx5090)", "- (rtx5090)"]
 LAYERS = ["L1", "L2/3", "L4", "L5", "L6"]
 
-# bars: x position (pt) of the bar centers in the paper's page; the panels are 147 pt apart, the bars 31.7 pt
 X0, X_PANEL, X_BAR = 110.4, 147.0, 31.7
-ROW_SPLITS = (335, 430)                          # y (pt) separating the three rows of panels
+ROW_SPLITS = (335, 430)                          # y separating the three rows of panels
 
-# V100 sortings (10 minutes) and the layers to keep
+# V100 sortings and the layers to keep
 V100_PATHS = {
     "M": "dataset/01_intermediate/sorting/marques/Sorting{}_10m",
     "NS": "dataset/01_intermediate/sorting/npx_spont/Sorting{}_10m",
@@ -33,8 +28,7 @@ SORTER_FOLDER = {"ks4": "KS4", "ks3": "KS3", "ks2.5": "KS2_5"}
 
 
 def extract_counts_from_paper_pdf(pdf_path: str, page: int = 47) -> pd.DataFrame:
-    """Counts of single-units and multi-units annotated on each bar of the paper's Supplementary Fig. 9 (the multi-unit count is in the
-    black part of the bar, above the single-unit count)"""
+    """Counts of single-units and multi-units annotated on each bar's Supplementary Fig. 9"""
     xml = subprocess.run(["pdftotext", "-f", str(page), "-l", str(page), "-bbox", pdf_path, "-"], capture_output=True, text=True, check=True).stdout
     words = [(float(a), float(b), float(c), float(d), w) for a, b, c, d, w in
              re.findall(r'<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">(\d+)</word>', xml)]
@@ -60,7 +54,7 @@ def extract_counts_from_paper_pdf(pdf_path: str, page: int = 47) -> pd.DataFrame
 
 
 def get_v100_counts() -> pd.DataFrame:
-    """Single-units and multi-units of the V100 sortings (drift correction on) stored in dataset/01_intermediate/sorting/ (units in cortex)"""
+    """Single-units and multi-units of the V100 sortings stored in dataset/01_intermediate/sorting/"""
     rows = []
     for sorter in SORTERS:
         for ds, path in V100_PATHS.items():
@@ -73,19 +67,16 @@ def get_v100_counts() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-# positions (x: bar index, y: proportion) of the unit counts in each panel (rows: ks4, ks3, ks2.5; columns: M, NS, S), as in the paper
 NUMBER_Y = {  # (single-units, multi-units)
     ("ks4", "M"): (0.01, 0.6), ("ks4", "NS"): (0.01, 0.6), ("ks4", "S"): (0.01, 0.7),
     ("ks3", "M"): (0.1, 0.6), ("ks3", "NS"): (0.1, 0.6), ("ks3", "S"): (0.01, 0.7),
     ("ks2.5", "M"): (0.01, 0.6), ("ks2.5", "NS"): (0.1, 0.6), ("ks2.5", "S"): (0.01, 0.7),
 }
-# in the paper, the y label of each panel is the sorter in the first two columns (except ks2.5 / NS) and "Proportion (ratio)" otherwise
 YLABEL_IS_SORTER = {("ks4", "M"), ("ks4", "NS"), ("ks3", "M"), ("ks3", "NS"), ("ks2.5", "M")}
 
 
 def plot_source_data(df: pd.DataFrame, figsize=(6, 4)):
-    """Stacked bars of the proportions of single-units (white) and multi-units (black) for each sorter (rows), dataset (columns) and
-    condition (bars); each bar is annotated with the number of single-units and multi-units"""
+    """Stacked bars of the proportions of single-units and multi-units for each sorter, dataset and condition"""
     import matplotlib.pyplot as plt
 
     fig, axes = plt.subplots(3, 3, figsize=figsize)

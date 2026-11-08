@@ -1,13 +1,6 @@
-"""Assemble the panels of a figure into one vector pdf with the layout of the paper
+"""Assemble the panels of a figure into one vector pdf with the layout
 
 author: laquitainesteeve@gmail.com
-
-The layout (position of each panel, panel letter and title) is measured on the figure of the paper (paper/Laquitaine_NatureNeuro_2025.pdf, in
-pt of the paper's page) and scaled so that the panels keep about their native size (their text stays at 5-7 pt). Each panel pdf of
-figures/8_source_data/<panel>/ is fitted in its box (same scale in x and y, centred); panels made of several files (e.g. one per layer) are
-stacked in their box. Panel letters (Arial bold 8 pt) and titles (Arial bold 7 pt) are drawn as editable text.
-
-Output: paper/figures/<figure>.pdf and a report of the scale of each panel (a scale far from 1 changes the text size).
 
 Usage:
 
@@ -24,10 +17,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from pypdf import PageObject, PdfReader, PdfWriter, Transformation
 
-SOURCE = "figures/8_source_data"
+SOURCE = "figures/source_data"
 OUTPUT = "paper/figures"               # the figures of the manuscript
 
-# Fig. 2: boxes [x0, y0, x1, y1] in pt of the paper's page (y downwards), letters (x, y of the letter's top-left) and titles (centre x, top y)
+# Fig. 2: boxes [x0, y0, x1, y1] in pt's page, letters and titles
 LAYOUTS = {
     "fig2": {
         "page": [91.0, 72.0, 506.0, 656.0],
@@ -100,7 +93,7 @@ def assemble(name, scale):
         natural_w = max(w for w, h in sizes)
         natural_h = sum(h for w, h in sizes)                       # parts are stacked from top to bottom
         s = min(bw / natural_w, bh / natural_h)
-        y_top = H - py0 - (bh - natural_h * s) / 2                # centred in the box (pdf y upwards)
+        y_top = H - py0 - (bh - natural_h * s) / 2                # centred in the box
         x_left = px0 + (bw - natural_w * s) / 2
         for part, (w, h) in zip(parts, sizes):
             y_top -= h * s

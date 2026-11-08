@@ -1,14 +1,11 @@
-"""Compute the features of the ground truth neurons and of their waveforms for a synthetic simulation
-(Buccino, MEArec S2-S5) or for the biophysical simulation of the spontaneous regime (Supplementary Fig. 6c)
+"""Compute the features of the ground truth neurons and of their waveforms for a synthetic simulation (Buccino, MEArec S2-S5) or for the biophysical simulation of the spontaneous regime (Supplementary Fig. 6c)
 
 author: laquitainesteeve@gmail.com
 
 Usage (environment envs/mearec_si_0_103_0, as in the paper's notebook):
 
-    cd /home/steeve/steeve/epfl/code/spikebias
+    cd /home/steeve/steeve/epfl/code/spikebias-paper
     PYTHONPATH=$PWD envs/mearec_si_0_103_0/bin/python src/pipes/validation/synthetic/compute_features.py --name buccino
-
-The features are saved in dataset/01_intermediate/supplementary/synthetic_features/<name>.npz
 """
 
 import argparse
@@ -27,7 +24,7 @@ from src.nodes.validation import synthetic_simulation as ss
 
 warnings.filterwarnings("ignore")
 
-DURATION_S = 600  # duration of the recording period considered (seconds)
+DURATION_S = 600  # duration of the recording period considered
 OUT_FOLDER = "dataset/01_intermediate/supplementary/synthetic_features"
 
 # recording and ground truth of each simulation
@@ -45,15 +42,15 @@ EXTENSION_PARAMS = {"random_spikes": {"seed": 0}, "waveforms": {"ms_before": 3.0
 
 
 def load(name: str):
-    """load the recording and the ground truth of a simulation, as in the paper's notebook"""
+    """load the recording and the ground truth of a simulation"""
     rec_path, gt_path = PATHS[name]
     Recording = si.load_extractor(rec_path)
     Gt = si.load_extractor(gt_path)
 
     if name == "ns":
-        # preprocessing of the biophysical simulation: int16, 300 Hz high-pass, median common reference (first 10 minutes)
+        # preprocessing of the biophysical simulation: int16, 300 Hz high-pass
         Recording = ss.standardize_biophy_site_location_property(Recording)  # 3D site locations
-        Recording = spre.scale(Recording, gain=1.0, offset=0.0)       # in-memory copy of the traces (astype rounds the traces in place, which fails on read-only memory maps)
+        Recording = spre.scale(Recording, gain=1.0, offset=0.0)       # in-memory copy of the traces
         Recording = spre.astype(Recording, "int16")
         Recording = spre.bandpass_filter(Recording, freq_min=300, freq_max=19999)
         Recording = spre.common_reference(Recording, reference="global", operator="median")
@@ -63,7 +60,7 @@ def load(name: str):
         Gt = Gt.frame_slice(start_frame=0, end_frame=int(Recording.get_sampling_frequency() * DURATION_S))
     else:
         if name == "buccino":
-            # original Buccino simulation (already band-pass filtered 300-6000 Hz): 3D site locations (x=0), cell locations to x, y, z
+            # original Buccino simulation: 3D site locations, cell locations to x, y, z
             Recording.set_property("location3D", np.insert(Recording.get_channel_locations(), 0, 0, axis=1))
             Gt = ss.standardize_metadata(Gt)
         Recording.set_property("location", Recording.get_property("location")[:, :2])  # 2D channel location for spatial metrics
@@ -78,7 +75,7 @@ def main(name: str, n_jobs: int):
     Recording, Gt = load(name)
     print(name, "recording:", Recording.get_num_channels(), "sites,", Recording.get_total_duration(), "s | ground truth:", len(Gt.unit_ids), "units", flush=True)
 
-    # sorting analyzer (waveforms, templates, noise levels, spike amplitudes)
+    # sorting analyzer
     analyzer = si.create_sorting_analyzer(sorting=Gt, recording=Recording, format="memory")
     analyzer.compute(["random_spikes", "waveforms", "templates", "noise_levels", "spike_amplitudes"], extension_params=EXTENSION_PARAMS, save=False)
     analyzer.sparsity = compute_sparsity(templates_or_sorting_analyzer=analyzer, method="radius", radius_um=100)

@@ -62,9 +62,6 @@ faiss
 
 # temporary datasets
 temp/*
-tmp_dataset/*
-!tmp_dataset/sorting_quality_evoked_1h.csv
-!tmp_dataset/sorting_quality.csv
 
 # python virtual environments 
 envs/dandi/*
@@ -260,4 +257,7 @@ v100_sortings
 models/**/*.pt
 
 # source data file
-figures/8_source_data/Source_Data.xlsx
+figures/source_data/Source_Data.xlsx
+
+session_history.md
+temp

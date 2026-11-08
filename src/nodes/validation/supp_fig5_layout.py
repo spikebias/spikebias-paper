@@ -1,9 +1,6 @@
-"""Layout of the panels of Supplementary Fig. 5 (yield per site, spike assignment biases, CEBRA curation), drawn from the source data
+"""Layout of the panels of Supplementary Fig. 5, drawn from the source data
 
 author: laquitainesteeve@gmail.com
-
-The axes have the position and size of the axes of paper/figures/supp_fig5.pdf (pt of the page, y down, measured on the figure; page 513 x 503 pt).
-Text is Arial 5 pt, except the titles (7 pt, bold). The text of each panel is positioned with text_pt (centre at the page coordinates).
 """
 
 import numpy as np
@@ -14,20 +11,20 @@ from src.nodes.validation.supp_fig4_layout import add_axes_pt, new_figure, set_t
 
 FONT, TITLE = 5, 7
 
-# panel a: yield per site (bars): axes left/top/width/height, legends (patch left x, tops of the patches, 12 x 4.2 pt)
+# panel a: yield per site: axes left/top/width/height, legends
 A_AXES = (100.14, 26.68, 168.0, 55.55)
 A_CANVAS = (0.0, 0.0, 513.0, 135.0)
 A_LEGEND_NPX = dict(title_xy=(322.0, 30.0), patch_x=296.5, tops=[41.8, 50.6, 59.5, 68.1], text_x=313.0)
 A_LEGEND_DENSE = dict(title_xy=(392.0, 30.0), patch_x=388.7, tops=[50.6, 59.5], text_x=405.0)
 
-# panel b: spike assignment biases: 4 rows (S, NS, DS, E) x 6 sorters, axes of 55.6 x 22.6 pt
+# panel b: spike assignment biases: 4 rows x 6 sorters, axes of 55.6 x 22.6 pt
 B_LEFT = [54.2, 116.5, 178.8, 241.1, 303.4, 365.7]
 B_TOP = [164.3, 197.7, 231.1, 264.5]
 B_W, B_H = 55.6, 22.6
 B_CANVAS = (0.0, 128.0, 513.0, 225.0)
 B_LEGEND = dict(patch_x=429.9, tops=[233.8, 243.5, 252.3, 262.2, 271.0], title_xy=(467.0, 224.0), text_x=445.0)
 
-# panels c and d: decoding performance; panel e: training loss
+# panels c and d: decoding performance
 C_AXES = (126.2, 394.4, 46.55, 64.2)
 D_AXES = (240.6, 394.9, 46.6, 64.2)
 E_AXES = (380.5, 400.3, 56.6, 55.5)
@@ -35,7 +32,7 @@ CDE_CANVAS = (0.0, 340.0, 513.0, 163.0)
 
 
 def plot_biases_grid(df_counts, sorters, sorter_titles, experiments, layers, bias_order, bias_colors, bias_labels):
-    """Panel b: ratios of 'single-unit' spike assignment biases by layer (x-axis), spike sorter (columns) and ground truth simulation (rows)"""
+    """Panel b: ratios of 'single-unit' spike assignment biases by layer, spike sorter and ground truth simulation"""
     fig = new_figure(B_CANVAS)
     axes = np.empty((len(experiments), len(sorters)), dtype=object)
     for r, exp in enumerate(experiments):

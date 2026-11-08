@@ -1,6 +1,4 @@
-"""Waveform preprocessing variants to test whether they change the waveform-based quality
-metrics (silhouette, snr) of sorted units. Each variant is self-contained (loads its own
-waveforms) so that the variants can be run in parallel processes."""
+"""Waveform preprocessing variants to test whether they change the waveform-based quality metrics (silhouette, snr) of sorted units."""
 
 import os
 import numpy as np
@@ -15,13 +13,13 @@ JOB1 = dict(n_jobs=1, progress_bar=False)
 
 
 def load_memory_we(view):
-    """fresh in-memory waveform extractor (waveforms loaded from disk)"""
+    """fresh in-memory waveform extractor"""
     we0 = si.load_waveforms(view, with_recording=True)
     return we0, we0.select_units(we0.unit_ids)
 
 
 def main_pos(W):
-    """position of the main (largest trough) channel of a unit's waveforms (spikes x samples x channels)"""
+    """position of the main channel of a unit's waveforms"""
     return int(np.argmin(W.mean(0).min(0)))
 
 
@@ -72,7 +70,7 @@ def top_channels_sparsity(we, n):
 
 
 def restrict_to_main_channels(we, n):
-    """keep only the n channels with the largest trough amplitude of each unit (in memory: waveforms and sparsity)"""
+    """keep only the n channels with the largest trough amplitude of each unit"""
     mask = np.zeros((len(we.unit_ids), we.get_num_channels()), dtype=bool)
     for i, u in enumerate(we.unit_ids):
         W = we._memory_objects["wfs_arrays"][u]
@@ -111,7 +109,7 @@ VARIANT_NAMES = (
 
 
 def compute_variant(name, view):
-    """returns (name, DataFrame with silhouette and snr indexed by unit id)"""
+    """returns"""
     we0, we = load_memory_we(view)
     if name == "baseline settings (check)":
         return name, features(we)
@@ -126,7 +124,7 @@ def compute_variant(name, view):
         return name, features(restrict_to_main_channels(we, n))
     if name.endswith("components"):
         return name, features(we, n_components=int(name.split()[1]))
-    if name.startswith("PCA mode concatenated"):   # concatenated mode needs the same number of channels for every unit
+    if name.startswith("PCA mode concatenated"):
         return name, features(restrict_to_main_channels(we, 6), mode="concatenated")
     if name.startswith("PCA mode"):
         return name, features(we, mode=name.split()[-1])

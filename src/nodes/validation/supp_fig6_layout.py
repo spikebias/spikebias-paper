@@ -1,10 +1,6 @@
-"""Layout of the panels of Supplementary Fig. 6 (delta time, features of the MEArec models, yield and accuracy), drawn from the source data
+"""Layout of the panels of Supplementary Fig. 6, drawn from the source data
 
 author: laquitainesteeve@gmail.com
-
-The axes have the horizontal position and width of the axes of paper/figures/supp_fig6.pdf (pt of the page, y down, measured on the figure; page
-508 x 599 pt). The vertical spacing of panel c (13 rows) is reduced and panels d and e are moved up accordingly, so that the whole figure is 184 mm high
-instead of 211 mm (Nature: 185 mm at most for a figure with a legend of less than 300 words). Text is Arial 5 pt, except the titles (7 pt, bold).
 """
 
 import numpy as np
@@ -30,13 +26,13 @@ DE_CANVAS = (60.0, 414.0, 450.0, 130.0)
 
 
 def plain_log_labels(ax):
-    """Labels of a log y axis written as plain numbers (1, 100, 1000): a mathtext exponent would be smaller than 5 pt"""
+    """Labels of a log y axis written as plain numbers: a mathtext exponent would be smaller than 5 pt"""
     ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
     ax.yaxis.set_minor_formatter(NullFormatter())
 
 
 def plot_features_grid(features, features_ns, plots):
-    """Panel c: distributions of the features of each synthetic model (blue) and of the biophysical model (red); 13 rows x 5 models"""
+    """Panel c: distributions of the features of each synthetic model and of the biophysical model"""
     models = list(plots.MODEL_TITLES)
     fig = new_figure(C_CANVAS)
     n_rows = len(plots.FEATURE_ROWS)

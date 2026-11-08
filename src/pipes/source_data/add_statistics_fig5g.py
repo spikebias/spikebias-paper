@@ -2,11 +2,6 @@
 
 author: laquitainesteeve@gmail.com
 
-Reads figures/8_source_data/fig5g/fig5g.xlsx (weights of the model of good units, two-sided Wald test of each weight, uncorrected P in "p_value") and
-adds the column "p_value_holm": the P values Holm-corrected for the 10 weights of the panel. The three weights marked in the figure (firing range,
-firing rate and mad_ratio) remain significant (P = 0.0007, 0.0014 and 0.0044). The published source data come from an earlier waveform extraction
-(see fig5g.ipynb), so the column is added to the stored file rather than recomputed. Run merge_source_data.py afterwards.
-
 Usage:
 
     PYTHONPATH=$PWD envs/spikebias/bin/python src/pipes/source_data/add_statistics_fig5g.py
@@ -15,7 +10,7 @@ Usage:
 import pandas as pd
 from statsmodels.stats.multitest import multipletests
 
-PATH = "figures/8_source_data/fig5g/fig5g.xlsx"
+PATH = "figures/source_data/fig5g/fig5g.xlsx"
 
 if __name__ == "__main__":
     df = pd.read_excel(PATH).drop(columns="p_value_holm", errors="ignore")

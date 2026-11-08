@@ -1,15 +1,6 @@
-"""Panels of Fig. 4b-c: box plots of the log firing rates and of their variances in each layer, drawn from the source data
+"""Panels of Fig. 4b-c: box plots of the log firing rates and of their variances in each layer
 
 author: laquitainesteeve@gmail.com
-
-The panels have the layout of panels b and c of paper/figures/fig4.pdf. Every element is drawn in the pt coordinates of that page (y down), measured on the
-figure: position of the axes, of the layer ticks (as in the figure, the ticks of layers 1 to 4 are not at the centre of their boxes), of the boxes (one
-slot per experiment in each layer, the boxes of the experiments without data are left empty), size of the boxes (6.85 pt), of the whiskers' caps (half a box),
-of the outliers (2.7 pt), of the brackets and of the stars. Boxes: median and 25th-75th percentiles, notches: 95% confidence interval of the median
-(1.57 IQR / sqrt(n)), whiskers: 1.5 IQR (Tukey), circles: outliers. Brackets and stars: two-sided Mann-Whitney U test of each experiment against the
-Marques-Smith data (M) in the layer, Holm-corrected for the comparisons of the panel (ns: p >= 0.05, *: p < 0.05, **: p < 0.01, ***: p < 0.001). In panel c,
-the layers with fewer than 3 Marques-Smith units (column "n_units" of the source data) are not tested: the bootstrapped variances of one or two units take
-only one or two values.
 """
 
 import numpy as np
@@ -22,18 +13,18 @@ from statsmodels.stats.multitest import multipletests
 
 LAYERS = ["L1", "L2/3", "L4", "L5", "L6"]
 EXPERIMENTS = ["M", "NS", "E", "S"]
-# colours of the boxes (seaborn palette desaturated by 0.75, as in the paper's figure)
+# colours of the boxes
 COLORS = {"M": (0.6, 0.6, 0.6), "NS": (0.804, 0.235, 0.243), "E": (0.875, 0.494, 0.125), "S": (0.282, 0.494, 0.659)}
 ALPHA = 0.4
 LINEWIDTH = 0.5
 FONT = 5
-# star of the figure (asterisk glyph turned by 270 degrees, outline relative to its centre, pt)
+# star of the figure
 STAR = np.array([[0.861, 1.428], [0.002, 0.291], [-0.865, 1.428], [-1.299, 1.244], [-0.4, 0.182], [-2.068, 0.182], [-2.068, -0.182], [-0.4, -0.182],
                  [-1.299, -1.244], [-0.865, -1.428], [0.002, -0.291], [0.861, -1.428], [1.299, -1.244], [0.4, -0.182], [2.068, -0.182], [2.068, 0.182],
                  [0.4, 0.182], [1.299, 1.244]])
-NS_DX, NS_DY = (1.25, 2.48, 2.5), (-0.4, -3.1, -3.1)       # start of the 'ns' text (baseline x offset from the bracket, y offset from its middle)
+NS_DX, NS_DY = (1.25, 2.48, 2.5), (-0.4, -3.1, -3.1)       # start of the 'ns' text
 
-# geometry measured on paper/figures/fig4.pdf (pt of the page, y down)
+# geometry measured on paper/figures/fig4.pdf
 PANELS = {
     "b": dict(
         value="firing rate", xlabel="Log10 of firing rate", region=(143.0, 66.0, 226.0, 322.0),
@@ -62,7 +53,7 @@ def symbol(p):
 
 
 def too_few_units_M(df, layer, min_units_M):
-    """True when the layer has fewer than min_units_M Marques-Smith units (column "n_units"); False when min_units_M is None"""
+    """True when the layer has fewer than min_units_M Marques-Smith units"""
     if min_units_M is None:
         return False
     n = df[(df["layer"] == layer) & (df["experiment"] == "M")]["n_units"]
@@ -70,7 +61,7 @@ def too_few_units_M(df, layer, min_units_M):
 
 
 def mann_whitney(df, value, layer, exp, min_units_M=None):
-    """P of the two-sided Mann-Whitney U test of an experiment against M in a layer; None without test (a box without data or too few M units)"""
+    """P of the two-sided Mann-Whitney U test of an experiment against M in a layer"""
     m = df[(df["layer"] == layer) & (df["experiment"] == "M")][value].dropna().values
     t = df[(df["layer"] == layer) & (df["experiment"] == exp)][value].dropna().values
     if len(m) == 0 or len(t) == 0 or too_few_units_M(df, layer, min_units_M):
@@ -79,7 +70,7 @@ def mann_whitney(df, value, layer, exp, min_units_M=None):
 
 
 def plot_source_data(df, panel):
-    """Panel b (log firing rates) or c (variances of the log firing rates) from the source data"""
+    """Panel b or c from the source data"""
     g = PANELS[panel]
     x0, y0, x1, y1 = g["region"]
     fig = plt.figure(figsize=((x1 - x0) / 72, (y1 - y0) / 72))
@@ -90,7 +81,7 @@ def plot_source_data(df, panel):
     to_x = lambda v: g["x_zero"] + g["x_per_unit"] * np.asarray(v, dtype=float)
     k = dict(color="k", linewidth=LINEWIDTH, solid_capstyle="butt")
 
-    # axes: layer ticks (left) and value axis (bottom)
+    # axes: layer ticks and value axis
     ax.plot([g["spine_x"]] * 2, g["spine_y"], **k)
     for y in g["ticks_y"]:
         ax.plot([g["spine_x"] - g["tick_len"], g["spine_x"]], [y, y], **k)

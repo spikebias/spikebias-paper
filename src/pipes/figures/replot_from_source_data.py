@@ -1,15 +1,6 @@
-"""Replot figure panels from their saved source data, with the Nature figure guidelines (src/nodes/figure_style.py)
+"""Replot figure panels from their saved source data, with the Nature figure guidelines
 
 author: laquitainesteeve@gmail.com
-
-For each panel notebook of notebooks/2_results_editorial_requests/ that follows the source data template (a `plot_source_data` function, the
-source data saved to figures/8_source_data/<panel>/<panel>.xlsx and a cell that replots the panel from the reloaded xlsx), this script builds
-and runs a short notebook with:
-* the notebook's imports, constants and function definitions (no other statement, so that no analysis is re-run),
-* `figure_style.apply()` (Arial, 5-7 pt, editable text, 300 dpi, a .pdf next to each .svg),
-* the notebook's cells that reload the source data and replot the panel,
-* the notebook's own savefig statement of the panel's .svg.
-The figures therefore show exactly the data of the Source Data file. The analyses themselves are not re-run.
 
 Usage (all template notebooks, or the panels given):
 
@@ -28,7 +19,7 @@ import nbformat
 from nbclient import NotebookClient
 
 NOTEBOOKS = "notebooks/2_results_editorial_requests"
-# calls that load or compute data: an assignment that makes one of them is not kept
+# calls that load or compute data
 HEAVY_CALLS = re.compile(r"load|read|compute|extract|fit|evaluate|train|run|simulate|save|^to_|download|slice|traces|predict|analyz|wave|pca|sort|"
                          r"get_config|Client|query|merge|concat|groupby|apply|subprocess|system", re.IGNORECASE)
 SAFE_EXPR_CALLS = ("os.chdir", "chdir", "rcParams.update", "rc", "set_theme", "set_style", "set_context", "simplefilter", "filterwarnings",
@@ -51,7 +42,7 @@ def _name(call) -> str:
 
 
 def keep_definitions(source: str) -> str:
-    """Imports (in try/except), function and class definitions, constant assignments and setup calls of a cell"""
+    """Imports, function and class definitions, constant assignments and setup calls of a cell"""
     lines = [l for l in source.split("\n") if not l.lstrip().startswith(("%", "!"))]
     try:
         tree = ast.parse("\n".join(lines))

@@ -1,17 +1,15 @@
-"""Candidate features that describe sorted units whose quality metrics look like those of degraded
-units although they are 'good' (low firing rate, variable spike amplitudes, few spikes).
-None of them uses the ground truth."""
+"""Candidate features that describe sorted units whose quality metrics look like those of degraded units although they are 'good' (low firing rate, variable spike amplitudes, few spikes)."""
 
 import numpy as np
 import pandas as pd
 from scipy import stats
 from spikeinterface.postprocessing import compute_spike_amplitudes
 
-BIN_S = 5.0     # bin size of the firing-rate series (s)
+BIN_S = 5.0     # bin size of the firing-rate series
 
 
 def amplitude_features(a, t, duration):
-    """spike amplitude distribution of a unit (a: |amplitudes|, t: spike times in s)"""
+    """spike amplitude distribution of a unit"""
     med = np.median(a)
     out = dict(
         amp_cv=np.std(a) / np.mean(a),
@@ -25,7 +23,7 @@ def amplitude_features(a, t, duration):
 
 
 def firing_features(t, duration):
-    """temporal firing pattern of a unit (t: spike times in s)"""
+    """temporal firing pattern of a unit"""
     isi = np.diff(t)
     counts = np.histogram(t, bins=np.arange(0, duration + BIN_S, BIN_S))[0]
     lv = 3 / (len(isi) - 1) * np.sum(((isi[:-1] - isi[1:]) / (isi[:-1] + isi[1:])) ** 2) if len(isi) > 2 else np.nan
@@ -40,7 +38,7 @@ def firing_features(t, duration):
 
 
 def spatial_features(template, y):
-    """footprint of a unit; template: samples x channels, y: channel depths (um)"""
+    """footprint of a unit"""
     peak = -template.min(0)
     main = int(np.argmax(peak))
     order = np.argsort(peak)[::-1]
@@ -60,7 +58,7 @@ def spatial_features(template, y):
 
 
 def cross_unit_features(templates, trains, fs, rates):
-    """similarity of each unit with the other sorted units (split/merge candidates)"""
+    """similarity of each unit with the other sorted units"""
     flat = templates.reshape(templates.shape[0], -1)
     flat = flat / np.linalg.norm(flat, axis=1, keepdims=True)
     S = flat @ flat.T
@@ -97,7 +95,7 @@ def waveform_features(We):
 
 
 def compute_extra_features(We, duration=600.0, job_kwargs=None):
-    """DataFrame of candidate features indexed by (int) unit id, with a 'group' mapping"""
+    """DataFrame of candidate features indexed by unit id, with a 'group' mapping"""
     fs = We.sampling_frequency
     ids = [int(u) for u in We.unit_ids]
     amps = compute_spike_amplitudes(We, peak_sign="neg", outputs="by_unit", load_if_exists=True, **(job_kwargs or {}))[0]

@@ -2,16 +2,6 @@
 
 author: laquitainesteeve@gmail.com
 
-Reads figures/8_source_data/fig4b/fig4b.xlsx (log10 firing rates of the single units) and fig4c/fig4c.xlsx (variances of the log10 firing rates, 100
-bootstraps per box) and writes fig4b_statistics.xlsx and fig4c_statistics.xlsx (merged into Source_Data.xlsx by merge_source_data.py) with:
-* sheet "per_layer": two-sided Mann-Whitney U test of each simulation (NS: spontaneous, E: evoked, S: synthetic) against the Marques-Smith data (M) in each
-  layer (the tests of the stars of the figure): n, medians, difference of the medians (simulation - M) with its 95% bootstrap confidence interval
-  (10,000 resamples, seed 0; spikes/s in 4b, variance in 4c), U statistic of M, exact P, P Holm-corrected for the comparisons of the panel and the
-  symbol of the figure (from the Holm-corrected P). In 4c, the layers with fewer than 3 Marques-Smith units (n_units_M) are not tested (layer 4: one unit,
-  whose bootstrapped variances are all 0)
-* sheet "layers_5_6" (4b only): the test of the Results text: median firing rate in layers 5 and 6 (spikes/s) of M, of the simulations and of NS and E pooled,
-  difference of the medians with its 95% bootstrap confidence interval (10,000 resamples, seed 0) and two-sided Mann-Whitney U test
-
 Usage:
 
     PYTHONPATH=$PWD envs/spikebias/bin/python src/pipes/source_data/add_statistics_fig4.py
@@ -24,13 +14,13 @@ from statsmodels.stats.multitest import multipletests
 
 from src.nodes.validation.firing_rate_plots import LAYERS, PANELS, symbol, too_few_units_M
 
-SOURCE = "figures/8_source_data"
+SOURCE = "figures/source_data"
 SEED = 0
 N_BOOT = 10_000
 
 
 def median_difference(m, x, to_rate, rng):
-    """Difference of the medians (x - m) and its 95% bootstrap confidence interval, in the unit given by to_rate"""
+    """Difference of the medians and its 95% bootstrap confidence interval, in the unit given by to_rate"""
     m, x = to_rate(np.asarray(m)), to_rate(np.asarray(x))
     boot = [np.median(rng.choice(x, len(x))) - np.median(rng.choice(m, len(m))) for _ in range(N_BOOT)]
     lo, hi = np.percentile(boot, [2.5, 97.5])

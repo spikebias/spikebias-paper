@@ -72,24 +72,7 @@ def plot_unit_isolation_fixed_ns2x(
     n_single_units_ns2x: int = 193,
     n_mu_ns2x: int = 315,
 ):
-    """stacked bar plot of the ratio of sorted single-units and multi-units
-
-    Same as plot_unit_isolation() but NS-2X is plotted from hardcoded
-    unit counts (315 multi-units, 193 single-units) instead of a
-    df_ns_2X dataframe, because the raw sorted units for that
-    condition are no longer available.
-
-    Args:
-        ax (_type_): _description_
-        df_nv (_type_): _description_
-        df_ns (_type_): _description_
-        df_ne (_type_): _description_
-        df_nb (_type_): _description_
-        legend_cfg (dict): _description_
-
-    Returns:
-        _type_: _description_
-    """
+    """stacked bar plot of the ratio of sorted single-units and multi-units"""
     # plot
     ax, df_source = npx_fr.plot_single_unit_ratio_fixed_ns2x(
         ax, df_nv, df_ns, df_ne, df_nb, legend_cfg,
@@ -101,7 +84,7 @@ def plot_unit_isolation_fixed_ns2x(
     ax.spines[["top", "right"]].set_visible(False)
     ax.legend("", frameon=False)
 
-    # disconnect axes (R style)
+    # disconnect axes
     ax.spines["bottom"].set_position(("axes", -0.05))
     ax.yaxis.set_ticks_position("left")
     ax.spines["left"].set_position(("axes", -0.05))
@@ -154,8 +137,7 @@ def plot_unit_isolation_dense_probe(ax, df_hv1, df_hv2, df_hv3, df_hs1, df_hs2, 
 
 
 def plot_unit_isolation_dense_probe_with_df(ax, df_hv1, df_hv2, df_hv3, df_hs1, df_hs2, df_hs3):
-    """same as plot_unit_isolation_dense_probe() but also returns the
-    tidy source dataset used to draw the figure, for export"""
+    """same as plot_unit_isolation_dense_probe but also returns the tidy source dataset used to draw the figure"""
 
     # plot
     ax, df_source = dense_fr.plot_single_unit_ratio_with_df(
@@ -165,7 +147,7 @@ def plot_unit_isolation_dense_probe_with_df(ax, df_hv1, df_hv2, df_hv3, df_hs1, 
     ax.spines[["top", "right"]].set_visible(False)
     ax.legend("", frameon=False)
 
-    # disconnect axes (R style)
+    # disconnect axes
     ax.spines["bottom"].set_position(("axes", -0.05))
     ax.yaxis.set_ticks_position("left")
     ax.spines["left"].set_position(("axes", -0.05))

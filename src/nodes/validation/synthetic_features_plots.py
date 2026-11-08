@@ -1,21 +1,11 @@
-"""Plots of the feature distributions of synthetic simulations against the biophysical simulation (Supplementary Fig. 6c)
-
-Functions copied from notebooks/1_results/supp_fig6_CD_pros_of_added_details_yield_revised.ipynb.
-"""
+"""Plots of the feature distributions of synthetic simulations against the biophysical simulation"""
 
 import numpy as np
 from matplotlib import pyplot as plt
 
 
 def plot_cell_to_site_distance(ax, distance, bins=20, title:str=None, ylim=(0,60), xlim=(0,25), edgecolor=(0.22, 0.5, 0.72), facecolor=(0.22, 0.5, 0.72), ylogscale=False, histtype='step', label=''):
-    """
-    Plots the firing rate distribution of units in a sorting extractor.
-
-    Parameters:
-    - firing rates: firing rates
-    - bins: int, optional
-        Number of bins for the histogram (default is 20).
-    """
+    """Plots the firing rate distribution of units in a sorting extractor."""
     ax.hist(distance, bins=bins, edgecolor=edgecolor, facecolor=facecolor, histtype=histtype, label=label)
     ax.set_xlabel("Cell-to-site distance (um)")
     ax.set_ylabel("Unit count", labelpad=1)
@@ -28,14 +18,7 @@ def plot_cell_to_site_distance(ax, distance, bins=20, title:str=None, ylim=(0,60
 
 
 def plot_firing_rate_distribution(ax, firing_rates, bins=20, title:str=None, ylim=(0,60), xlim=(0,25), edgecolor=(0.22, 0.5, 0.72), facecolor=(0.22, 0.5, 0.72), ylogscale=False, histtype='step'):
-    """
-    Plots the firing rate distribution of units in a sorting extractor.
-
-    Parameters:
-    - firing rates: firing rates
-    - bins: int, optional
-        Number of bins for the histogram (default is 20).
-    """
+    """Plots the firing rate distribution of units in a sorting extractor."""
     ax.hist(firing_rates, bins=bins, edgecolor=edgecolor, facecolor=facecolor, histtype=histtype)
     ax.set_xlabel("Firing rate (Hz)")
     ax.set_ylabel("Unit count")
@@ -48,12 +31,7 @@ def plot_firing_rate_distribution(ax, firing_rates, bins=20, title:str=None, yli
 
 
 def plot_firing_ranges_distribution(ax, firing_ranges, bins=20, title:str='simulation_name', ylim=(0,50), xlim=(0,800), edgecolor=(0.22, 0.5, 0.72), facecolor=(0.22, 0.5, 0.72), ylogscale=False, histtype='step'):
-    """
-    Parameters:
-    - amplitudes: waveform amplitudes
-    - bins: int, optional
-        Number of bins for the histogram (default is 20).
-    """
+    """Parameters: - amplitudes: waveform amplitudes - bins: int, optional Number of bins for the histogram."""
     ax.hist(firing_ranges, bins=bins, edgecolor=edgecolor, facecolor=facecolor, histtype=histtype)
     ax.set_xlabel("Firing range (Hz)", labelpad=1)
     ax.set_ylabel("Unit count")
@@ -66,12 +44,7 @@ def plot_firing_ranges_distribution(ax, firing_ranges, bins=20, title:str='simul
 
 
 def plot_waveform_amplitude_median_distribution(ax, amplitudes, bins=20, title:str='simulation_name', ylim=(0,50), xlim=(0,800), edgecolor=(0.22, 0.5, 0.72), facecolor=(0.22, 0.5, 0.72), ylogscale=False, histtype='step'):
-    """
-    Parameters:
-    - amplitudes: waveform amplitudes
-    - bins: int, optional
-        Number of bins for the histogram (default is 20).
-    """
+    """Parameters: - amplitudes: waveform amplitudes - bins: int, optional Number of bins for the histogram."""
     ax.hist(amplitudes, bins=bins, edgecolor=edgecolor, facecolor=facecolor, histtype=histtype)
     ax.set_xlabel("Amplitudes (uV)")
     ax.set_ylabel("Unit count")
@@ -84,12 +57,7 @@ def plot_waveform_amplitude_median_distribution(ax, amplitudes, bins=20, title:s
 
 
 def plot_waveform_snr_distribution(ax, snrs, bins=20, title:str='simulation_name', ylim=(0,50), xlim=(0,800), edgecolor=(0.22, 0.5, 0.72), facecolor=(0.22, 0.5, 0.72), ylogscale=False, histtype='step'):
-    """
-    Parameters:
-    - snrs: snrs
-    - bins: int, optional
-        Number of bins for the histogram (default is 20).
-    """
+    """Parameters: - snrs: snrs - bins: int, optional Number of bins for the histogram."""
     ax.hist(snrs, bins=bins, edgecolor=edgecolor, facecolor=facecolor, histtype=histtype)
     ax.set_xlabel("SNR")
     ax.set_ylabel("Unit count")
@@ -102,12 +70,7 @@ def plot_waveform_snr_distribution(ax, snrs, bins=20, title:str='simulation_name
 
 
 def plot_spatial_spread_distribution(ax, mad_ratio, bins=20, title:str='simulation_name', ylim=(0,50), xlim=(0,800), edgecolor=(0.22, 0.5, 0.72), facecolor=(0.22, 0.5, 0.72), ylogscale=False, histtype='step'):
-    """
-    Parameters:
-    - mad_ratio: mad_ratio
-    - bins: int, optional
-        Number of bins for the histogram (default is 20).
-    """
+    """Parameters: - mad_ratio: mad_ratio - bins: int, optional Number of bins for the histogram."""
     ax.hist(mad_ratio, bins=bins, edgecolor=edgecolor, facecolor=facecolor, histtype=histtype)
     ax.set_xlabel("Spatial spread (a.u)")
     ax.set_ylabel("Unit count")
@@ -121,16 +84,7 @@ def plot_spatial_spread_distribution(ax, mad_ratio, bins=20, title:str='simulati
 
 
 def plot_mad_ratio_distribution(ax, mad_ratios, bins=20, title:str='simulation_name', ylim=(0,50), xlim=(0,800), edgecolor=(0.22, 0.5, 0.72), facecolor=(0.22, 0.5, 0.72), ylogscale=False, histtype='step'):
-    """
-    Values close to 1 indicate a good isolation of the unit.
-    i.e., the mean absolute deviation of the spike amplitude is similar to the mean absolute deviation 
-    of the noise amplitude.
-    
-    Parameters:
-    - mad_ratios: waveform mean-absolute deviation ratio between spike amplitude and background noise
-    - bins: int, optional
-        Number of bins for the histogram (default is 20).
-    """
+    """Values close to 1 indicate a good isolation of the unit. i.e."""
     ax.hist(mad_ratios, bins=bins, edgecolor=edgecolor, facecolor=facecolor, histtype=histtype)
     ax.set_xlabel("MAD ratios (a.u)")
     ax.set_ylabel("Unit count")
@@ -143,16 +97,7 @@ def plot_mad_ratio_distribution(ax, mad_ratios, bins=20, title:str='simulation_n
 
 
 def plot_spatial_metric(ax, metric, bins=20, title:str='simulation_name', ylim=(0,50), xlim=(0,800), edgecolor=(0.22, 0.5, 0.72), facecolor=(0.22, 0.5, 0.72), ylogscale=False, histtype='step', label=''):
-    """
-    Values close to 1 indicate a good isolation of the unit.
-    i.e., the mean absolute deviation of the spike amplitude is similar to the mean absolute deviation 
-    of the noise amplitude.
-    
-    Parameters:
-    - mad_ratios: waveform mean-absolute deviation ratio between spike amplitude and background noise
-    - bins: int, optional
-        Number of bins for the histogram (default is 20).
-    """
+    """Values close to 1 indicate a good isolation of the unit. i.e."""
     ax.hist(metric, bins=bins, edgecolor=edgecolor, facecolor=facecolor, histtype=histtype, label=label)
     ax.set_ylabel("Unit count")
     if title:
@@ -165,12 +110,7 @@ def plot_spatial_metric(ax, metric, bins=20, title:str='simulation_name', ylim=(
 
 
 def plot_cell_to_cell_distances(ax, cell_distance, bins=20, title:str='simulation_name', ylim=(0,50), xlim=(0,800), edgecolor=(0.22, 0.5, 0.72), facecolor=(0.22, 0.5, 0.72), ylogscale=False, histtype='step'):
-    """
-    Parameters:
-    - cell_distance: all cell-to-cell euclidean distances
-    - bins: int, optional
-        Number of bins for the histogram (default is 20).
-    """    
+    """Parameters: - cell_distance: all cell-to-cell euclidean distances - bins: int"""
     ax.hist(cell_distance, bins=bins, edgecolor=edgecolor, facecolor=facecolor, histtype=histtype)
     ax.set_xlabel("Cell distances (um)")
     ax.set_ylabel("Unit count")
@@ -268,7 +208,7 @@ def plot_features(axes, col_ix, features, features_ns, title: str, ylim=2000):
     ax.spines['right'].set_visible(False)    
     if col_ix!=0: ax.set_xlabel('')
 
-    # cell waveform spatial spread (custom)
+    # cell waveform spatial spread
     ax = axes[10,col_ix]
     plot_spatial_spread_distribution(ax, features['spreads_simi_weighted_distance'], title='', ylim=(0,ylim), xlim=(0,1200))
     plot_spatial_spread_distribution(ax, features_ns['spreads_simi_weighted_distance_ns'], title='', ylim=(0,ylim), xlim=(0,1200), edgecolor='r', facecolor='None', ylogscale=True)
@@ -277,7 +217,7 @@ def plot_features(axes, col_ix, features, features_ns, title: str, ylim=2000):
     ax.set_xlabel('Similarity-weighted spread (a.u)')
     if col_ix!=0: ax.set_xlabel('')
 
-    # cell waveform spatial spread (spikeinterface)
+    # cell waveform spatial spread
     ax = axes[11,col_ix]
     ax = plot_spatial_metric(ax, np.array(features['spread']), bins=20, title='', ylim=(0,3000), xlim=(0,200))
     ax = plot_spatial_metric(ax, np.array(features_ns['si_spread_ns']), bins=20, title='', ylim=(0, 3000), xlim=(0, 200), edgecolor='r', facecolor='None', ylogscale=True, histtype='step')
@@ -306,10 +246,10 @@ def plot_features(axes, col_ix, features, features_ns, title: str, ylim=2000):
     return axes
 
     
-# Quality of unit isolation (single-unit yield)
+# Quality of unit isolation
 
 
-# ROWS of Supplementary Fig. 6c: (feature, plot function, label, x-axis limits, y-axis limits (unit count), scale factor)
+# ROWS of Supplementary Fig. 6c
 FEATURE_ROWS = [
     ("cell_to_site_distance", plot_cell_to_site_distance, "Cell-to-\nsite distance (um)", (0, 100), (0, 210), 1),
     ("cell_distance", plot_cell_to_cell_distances, "Cell distances (um)", (0, 100), (0, 210), 1),
@@ -328,16 +268,7 @@ FEATURE_ROWS = [
 
 
 def plot_feature_distributions(axes, col_ix, features, features_ns, title, n_matched=0):
-    """Plot the distributions of the features of a synthetic simulation (blue) and of the biophysical simulation (red) in a column of axes
-
-    Args:
-        axes (np.array): axes (rows x columns)
-        col_ix (int): column
-        features (dict): features of the synthetic simulation (keys of FEATURE_ROWS)
-        features_ns (dict): features of the biophysical simulation (same keys)
-        title (str): title of the column
-        n_matched (int): number of first rows (features) that the synthetic simulation matches (annotated 'Matched' by annotate_matched, after the layout)
-    """
+    """Plot the distributions of the features of a synthetic simulation (blue) and of the biophysical simulation (red) in a column of axes"""
     for row, (key, plot_fn, _, xlim, ylim, scale) in enumerate(FEATURE_ROWS):
         ax = axes[row, col_ix]
         synthetic = np.asarray(features[key], dtype=float) * scale
@@ -353,11 +284,7 @@ def plot_feature_distributions(axes, col_ix, features, features_ns, title, n_mat
 
 
 def annotate_matched(ax, fontsize=6):
-    """Write 'Matched' (red, same font size everywhere: 6 pt, within the 5-7 pt of the Nature guidelines) in the right of an axes
-    where it does not overlap the histograms, above the axes if there is no room
-
-    Call it after the layout of the figure is final.
-    """
+    """Write 'Matched' in the right of an axes where it does not overlap the histograms"""
     renderer = ax.figure.canvas.get_renderer()
     paths = [p.get_path().transformed(p.get_transform()) for p in ax.patches] + [l.get_path().transformed(l.get_transform()) for l in ax.lines]
     for y in (0.98, 0.84, 0.70, 0.56, 0.42, 0.28):
@@ -376,20 +303,11 @@ MODEL_TITLES = {
     "s4": "Mearec model 4 (S4)",
     "s5": "Mearec model 5 (S5)",
 }
-N_MATCHED = {"buccino": 0, "s2": 2, "s3": 3, "s4": 4, "s5": 5}  # number of first features that the model is constrained to match
+N_MATCHED = {"buccino": 0, "s2": 2, "s3": 3, "s4": 4, "s5": 5}
 
 
 def plot_features_figure(features: dict, features_ns: dict, fig_size=(6.6, 5.6)):
-    """Supplementary Fig. 6c: distributions of the features of the synthetic simulations (blue) and of our biophysical simulation (red)
-
-    Args:
-        features (dict): {model: {feature: array}} for the models of MODEL_TITLES
-        features_ns (dict): {feature: array} of the biophysical simulation
-        fig_size (tuple): figure size in inches
-
-    Returns:
-        fig, axes
-    """
+    """Supplementary Fig. 6c"""
     models = list(MODEL_TITLES)
     fig, axes = plt.subplots(len(FEATURE_ROWS), len(models), figsize=fig_size)
     for col, model in enumerate(models):

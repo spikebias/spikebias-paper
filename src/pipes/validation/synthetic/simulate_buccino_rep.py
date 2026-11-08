@@ -1,18 +1,6 @@
-"""Replicate Buccino's synthetic model with MEArec (Fig. 2s of the paper)
+"""Replicate Buccino's synthetic model with MEArec
 
 author: laquitainesteeve@gmail.com
-
-Simulates the 384-site Neuropixels recording of Buccino et al. (2020) with MEArec, without filtering: 200 excitatory and 50 inhibitory neurons
-(all in layer 5), 600 s, noise level 10 uV. The parameters are those of assets/mearec/buccino_rep/input_params.json and the templates those of
-temp/pros_of_details/templates.h5 (see generate_templates.py). The recording is saved with the metadata used by the analyses (layers, location3D)
-in dataset/00_raw/recording_buccino_rep (28 GB, float32; about 23 minutes; the templates, 13 GB, are loaded in memory).
-
-Environment envs/mearec_si_0_103_0 (MEArec 1.9.0):
-
-    cd /home/steeve/steeve/epfl/code/spikebias
-    PYTHONPATH=$PWD envs/mearec_si_0_103_0/bin/python src/pipes/validation/synthetic/simulate_buccino_rep.py
-
-Use --duration 10 --output temp/synthetic/buccino_rep_test for a test of a few minutes that leaves the recording of the dataset untouched.
 """
 
 import argparse
@@ -37,7 +25,7 @@ SAVE_PARAMS = {"n_jobs": 20, "verbose": True, "progress_bar": True, "overwrite":
 
 
 def standardize_site_location_property(Recording, zero_coord=0):
-    """3D locations of the sites (the probe is in the yz plane: x = 0)"""
+    """3D locations of the sites"""
     site_pos = np.insert(Recording.get_channel_locations(), zero_coord, 0, axis=1)
     Recording.set_property("location3D", site_pos)
     return Recording
@@ -59,7 +47,7 @@ def main(output, duration):
         rec_prms["spiketrains"]["duration"] = duration
     os.makedirs(os.path.dirname(H5_PATH), exist_ok=True)
 
-    # simulate (the longest step)
+    # simulate
     rec_gen = mr.gen_recordings(params=rec_prms, templates=TEMPLATES_PATH)
     mr.save_recording_generator(rec_gen, H5_PATH)
     Recording = se.MEArecRecordingExtractor(H5_PATH)

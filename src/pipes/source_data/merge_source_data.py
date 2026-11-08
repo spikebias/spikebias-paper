@@ -1,13 +1,6 @@
-"""Merge the source data of every panel into one Excel file of less than 30 MB, one sheet per figure (editor's request, Nature Communications)
+"""Merge the source data of every panel into one Excel file of less than 30 MB, one sheet per figure
 
 author: laquitainesteeve@gmail.com
-
-Input: figures/8_source_data/<panel>/*.xlsx (e.g. fig2a/fig2a.xlsx, supp_fig6c/supp_fig6c.xlsx), written by the notebooks of
-notebooks/2_results_editorial_requests/. Output (the file requested by the editor, below the 30 MB limit): paper/submission/Source_Data.xlsx, with the
-sheets "Fig. 2", ..., "Supplementary Fig. 9". The traces and spectra of Supplementary Fig. 2 are stored as they are plotted, downsampled for display
-(src/nodes/validation/trace_plots.py and psd_plots.py, downsample_for_display), which keeps the file below 30 MB (about 27 MB).
-In each sheet, the panels follow each other from top to bottom: a title row ("Fig. 2a", followed by the file and the sheet when a panel has
-several tables), the column names, the data and an empty row.
 
 Usage:
 
@@ -25,13 +18,13 @@ from openpyxl import Workbook
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.styles import Font
 
-SOURCE_DIR = "figures/8_source_data"
-OUTPUT = os.path.join("paper", "submission", "Source_Data.xlsx")    # the Source Data file requested by the editor
+SOURCE_DIR = "figures/source_data"
+OUTPUT = os.path.join("paper", "submission", "Source_Data.xlsx")
 MAX_ROWS = 1_048_576  # rows of an Excel sheet
 
 
 def figure_of(panel: str):
-    """('fig', 2, 'a') for fig2a, ('supp_fig', 6, 'c') for supp_fig6c"""
+    """('fig', 2, 'a') for fig2a, for supp_fig6c"""
     m = re.fullmatch(r"(supp_fig|fig)(\d+)([a-z]?)", panel)
     return (m.group(1), int(m.group(2)), m.group(3)) if m else None
 

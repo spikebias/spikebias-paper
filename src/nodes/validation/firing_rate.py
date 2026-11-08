@@ -52,8 +52,7 @@ def get_sorted_unit_meta(sorted_path: str):
 
     # record
     unit_id_all = Sorting.unit_ids.tolist()
-    # spike count in the first 600 s / 600 s: the sortings of the evoked regime sampled at 40 kHz by the sorters other than
-    # Kilosort4 last 606 s; their spikes after 600 s are not counted and their units without spikes before 600 s are dropped
+    # spike count in the first 600 s / 600 s
     counts = count_spikes_first_seconds(Sorting, 600)
     counts_all = count_spikes_first_seconds(Sorting, np.inf)
     keep = ~((counts == 0) & (counts_all > 0))
@@ -84,7 +83,7 @@ def get_sorted_unit_meta(sorted_path: str):
 
 
 def count_spikes_first_seconds(Sorting, duration_sec):
-    """Spike count of each unit (in the order of Sorting.unit_ids) in the first `duration_sec` seconds of the sorting"""
+    """Spike count of each unit in the first `duration_sec` seconds of the sorting"""
     spikes = Sorting.to_spike_vector()
     in_window = spikes["sample_index"] < duration_sec * Sorting.get_sampling_frequency()
     return np.bincount(spikes["unit_index"][in_window], minlength=len(Sorting.unit_ids))
@@ -257,22 +256,8 @@ def plot_single_unit_ratio(ax, df_vivo, df_silico_sp, df_silico_ev, df_silico_nb
 
 
 def fix_firing_rates(df, Sorting, path, duration_sec=600, verbose=True):
-    """Recompute the firing rates (spikes/s) of a sorting whose stored `firing_rates` were not divided by the duration of the sorting
-
-    The stored firing rates of the DANDI sorting of the evoked regime sorted with Kilosort3 (10 minutes) are the spike counts divided
-    by the duration of the whole 1-hour recording (3,618 s) instead of 10 minutes (about 6 times too low). A sorting is corrected when
-    the duration implied by its stored rates (spike count / stored rate) is more than 1.5 times longer than `duration_sec`.
-
-    Args:
-        df (pd.DataFrame): unit metadata of the sorting (get_sorted_unit_meta), indexed by unit id
-        Sorting: the SortingExtractor
-        path (str): path of the sorting (for the message)
-        duration_sec (float): duration of the sorting
-
-    Returns:
-        pd.DataFrame: df with corrected "firing_rate" if needed
-    """
-    if Sorting.get_property("firing_rates") is None:        # no stored rates (e.g. sortings cut to their first 10 minutes): nothing to correct
+    """Recompute the firing rates (spikes/s) of a sorting whose stored `firing_rates` were not divided by the duration of the sorting"""
+    if Sorting.get_property("firing_rates") is None:        # no stored rates: nothing to correct
         return df
     counts = Sorting.count_num_spikes_per_unit()
     n_spikes = np.array([counts[u] for u in Sorting.unit_ids])

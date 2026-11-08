@@ -1,12 +1,6 @@
-"""Panels of Fig. 5e-g: precision and recall of the curation model (e, f) and weights of its quality metrics (g), drawn from the source data
+"""Panels of Fig. 5e-g: precision and recall of the curation model and weights of its quality metrics
 
 author: laquitainesteeve@gmail.com
-
-The panels have the geometry of panels e, f and g of the paper's figure (page 16 of paper/Laquitaine_NatureNeuro_2025.pdf). Every element is drawn in
-the pt coordinates of that page (y down), measured on the figure: axes, ticks, dots (1.95 pt, jitter +-1.52 pt), median markers (4.87 pt with a white edge of 1 pt) and
-their 95% CI, red dashed line, bars (6.29 pt high), stars, texts. All text is Arial 5 pt (titles in bold). In g the axes keep the size of the paper's
-(x axis 81.5 pt wide, ticks 26.69 pt on each side of 0): the tick values are 10, 0, 10 (or 20 if the weights exceed 15 in absolute value) since the weights of the
-10-minute model are smaller than the paper's.
 """
 
 import numpy as np
@@ -20,14 +14,14 @@ RED = (0.93, 0.12, 0.14)
 PINK = (0.96, 0.40, 0.49)
 LW = 0.5
 
-# geometry measured on the paper's figure (pt of the page, y down)
+# geometry measured on the figure
 PR = {
     "e": dict(region=(95.0, 490.0, 226.0, 625.0), title="Spontaneous regime", title_xy=(147.55, 498.3), y0=587.75, ppu=62.39, xs=(131.02, 169.11),
               axis=(127.49, 172.68, 590.87), yaxis=(125.23, 525.36, 587.75), dash_y=556.56, label_dy=0.0, with_y=True),
     "f": dict(region=(210.0, 490.0, 282.0, 625.0), title="Evoked regime", title_xy=(247.25, 498.3), y0=586.97, ppu=62.39, xs=(227.57, 265.65),
               axis=(224.0, 269.2, 590.09), yaxis=None, dash_y=555.77, label_dy=-0.78, with_y=False),
 }
-# 25-point-circle dots, jitter of seaborn's stripplot (0.04 of the category width, 38.09 pt)
+# 25-point-circle dots, jitter of seaborn's stripplot
 DOT, JITTER = 1.95, 1.52
 MARKER, MARKER_EDGE = 4.87, 1.0057
 STAR = np.array([[-0.828, 1.994], [-1.699, 1.326], [-1.422, 1.021], [-1.133, 0.729], [-0.828, 0.443], [-0.719, 0.334], [-0.648, 0.26], [-0.617, 0.232],
@@ -52,7 +46,7 @@ def _fig(region):
 
 
 def _text(ax, x, y, s, ha="center", rotation=0, bold=False):
-    """Text of 5 pt; (x, y) is the anchor on the baseline"""
+    """Text of 5 pt"""
     ax.text(x, y, s, ha=ha, va="baseline", rotation=rotation, rotation_mode="anchor", fontsize=FONT, fontweight="bold" if bold else "normal", color="k")
 
 
@@ -61,7 +55,7 @@ def _line(ax, xs, ys, **kw):
 
 
 def plot_precision_recall(df, panel="e"):
-    """Precision and recall of the model on the test units of each fold (black dots), median and 95% CI (orange), 0.5 (red dashed line)"""
+    """Precision and recall of the model on the test units of each fold, median and 95% CI, 0.5"""
     g = PR[panel]
     fig, ax = _fig(g["region"])
     y = lambda v: g["y0"] - g["ppu"] * np.asarray(v, dtype=float)
@@ -107,7 +101,7 @@ def plot_precision_recall(df, panel="e"):
 
 
 def plot_weights(df):
-    """Weights of the z-scored quality metrics (bars); the weights significantly different from 0 are pink with stars"""
+    """Weights of the z-scored quality metrics"""
     w = W
     fig, ax = _fig(w["region"])
     d = df.sort_values(by="weight", ascending=False).reset_index(drop=True)

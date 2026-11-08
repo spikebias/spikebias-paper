@@ -5,11 +5,8 @@ author: steeve.laquitaine@epfl.ch
 Usage:
 
     sbatch cluster/validation/main/snr/test.sh
-    
-Duration: 1 min
 """
 
-# import libs
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.filterwarnings("ignore")

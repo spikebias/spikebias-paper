@@ -6,7 +6,7 @@
 #
 # 4. Install Intel AI lab's manifold analysis library
 #
-#   cd /home/steeve/steeve/epfl/code/spikebias/assets/
+#   cd /home/steeve/steeve/epfl/code/spikebias-paper/assets/
 #   git clone https://github.com/steevelaquitaine/neural_manifolds_replicaMFT_Cajal.git
 #   cd neural_manifolds_replicaMFT_Cajal
 #   python -m pip install -e .

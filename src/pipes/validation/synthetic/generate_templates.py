@@ -1,30 +1,10 @@
-"""Generate the cell templates used by the MEArec simulations S2-S5 (Supplementary Fig. 6c-e)
+"""Generate the cell templates used by the MEArec simulations S2-S5
 
 author: laquitainesteeve@gmail.com
 
-19,500 extracellular templates = 1,500 per cell model x 13 Blue Brain Project layer 5 cell models, recorded on a Neuropixels-384 probe
-(settings in assets/mearec/global_templates.json, seed 0). The file of the paper was made with MEArec 1.9.0 (environment
-envs/mearec_si_0_103_0) and the cell models that MEArec 1.9.0 downloads in ~/.config/mearec/1.9.0/cell_models/bbp.
-
-Cell models: MEArec downloads the 13 models from the Blue Brain Project portal (https://bbp.epfl.ch/nmc-portal/downloads, model version
-VERSION 1.0.11, 2015/10/07) into ~/.config/mearec/<version>/cell_models/bbp. The h5 file does not record them, so the sha256 of the files
-that define the models (morphology .asc, mechanisms .mod, parameters .json/.dat/.tsv, .hoc) are tracked in
-assets/mearec/cell_models_sha256.json and checked before the generation: the script stops if a download differs from the models of
-the paper (--write-manifest recreates the manifest, --skip-check bypasses the check).
-
-Software: the templates are computed by NEURON and LFPy, so their versions can change the waveforms. The h5 file does not record them.
-The environment envs/mearec_si_0_103_0 was built on 2026-04-14 15:47 and the file of the paper was written 20 minutes later (16:07); the
-versions installed there are pinned in envs/mearec_si_0_103_0.yml and in EXPECTED_VERSIONS below, which the script checks (--skip-check
-bypasses it).
-
-Besides the templates, a provenance file <output>.json records the versions of the packages and the sha256 of the cell model files.
-
 Usage (about 75 min, 13 GB, 32 cores):
 
-    PYTHONPATH=$PWD envs/mearec_si_0_103_0/bin/python src/pipes/validation/synthetic/generate_templates.py \
-        --output dataset/00_raw/mearec_templates/templates.h5
-
-Use --n 20 for a quick test (about 3 min). The templates of a smaller n are not a subset of those of the full run.
+    PYTHONPATH=$PWD envs/mearec_si_0_103_0/bin/python src/pipes/validation/synthetic/generate_templates.py         --output dataset/00_raw/mearec_templates/templates.h5
 """
 
 import argparse
@@ -48,7 +28,7 @@ MODEL_NAMES = {"VERSION", "README", "LICENSE", "CHANGELOG"}
 
 
 def model_files(cells: Path) -> dict:
-    """sha256 of the files that define the cell models (not the compiled mechanisms, scripts nor logs)"""
+    """sha256 of the files that define the cell models"""
     files = sorted(
         p for p in cells.rglob("*")
         if p.is_file() and "x86_64" not in p.parts and not p.name.startswith(("run", "."))
@@ -93,8 +73,7 @@ if __name__ == "__main__":
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
 
-    # MEArec writes and removes a file "tmp_params_path.yaml" in the working directory: run in a private directory so that two runs
-    # started from the same directory cannot delete each other's file (this made a first 55 min run fail at its last step)
+    # MEArec writes and removes a file "tmp_params_path.yaml" in the working directory
     out = out.resolve()
     cells = cells.resolve()
     work_dir = tempfile.mkdtemp(prefix="gen_templates_")

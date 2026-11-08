@@ -263,8 +263,6 @@ def plot_snr_for_layer_5_npx(
         snr_sili (list): sites x timepoints
         snr_vivo (list): _description_
         n_bins (int): _description_
-
-    note: lasts 3 mins because the Synthetic model
     has 384 sites
     """
     # 1 - get this layer
@@ -459,13 +457,10 @@ def plot_snr_for_layer_5_horv(
 def get_site_snr(trace: np.array, site: int):
     """calculate signal-to-noise ratio
     of a single site
-
     Noise is the mean absolute deviation
     of the entire trace
-
     Args:
         trace (np.array):
-        site: silent argument used by
         ProcessPoolExecutor()
     """
     # mad = pd.DataFrame(trace).mad().values

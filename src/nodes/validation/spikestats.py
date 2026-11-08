@@ -636,12 +636,7 @@ def plot_firing_rate_hist_vs_lognorm(
         lognormal=True
         ):
 
-    """_summary_
-
-    Returns:
-        dict: _description_
-        
-    """
+    """_summary_"""
     p_pickup = lambda _freq: 1.0 - poisson(_freq * t_dec).cdf(0)
 
     x_bins = np.logspace(log_x_min, log_x_max, nbins)
@@ -650,7 +645,7 @@ def plot_firing_rate_hist_vs_lognorm(
 
     H_all = np.histogram(data_all, bins=x_bins)[0] * p_hist
 
-    # mean and standard deviation of log(x), which we expect to be distributed normally
+    # mean and standard deviation of log, which we expect to be distributed normally
     mn_all = np.sum(np.log10(data_all) * p_all) / np.sum(p_all)
     sd_all = np.sum(np.abs(np.log10(data_all) * p_all - mn_all)) / np.sum(p_all)
 
@@ -678,20 +673,7 @@ def plot_firing_rate_hist_vs_lognorm(
         ax.set_xscale("log")
 
     # show minor ticks
-    #ax.tick_params(which='both')
-    #locmaj = matplotlib.ticker.LogLocator(base=10, numticks=3) 
-    #ax.xaxis.set_major_locator(locmaj)    
-    #locmin = matplotlib.ticker.LogLocator(base=10.0, subs=(0.2,0.4,0.6,0.8), numticks=12)
-    #ax.xaxis.set_minor_locator(locmin)
-    #ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-    #ax.set_yticks([0, 0.4, 0.8, 1])
-    #ax.set_yticklabels([0, 0.4, 0.8, 1])
 
-    # if legend:
-    #     plt.legend(frameon=False, loc='center left', bbox_to_anchor=(1, 0.5))
-    #     plt.xlabel("spontaneous firing rate (Hz)")
-    #     plt.ylabel("probability (ratio)")
-    #ax.set_xticklabels([])
     
     return {
         "x_data": x_bins[1:],

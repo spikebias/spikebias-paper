@@ -1,11 +1,6 @@
 """Panels c to f of Supplementary Fig. 3 drawn from the source data and rescaled to the height the journal guidelines allow
 
 author: laquitainesteeve@gmail.com
-
-c: mean waveform (and 95% CI) of the first three spikes of bursts of three bursting units; d, e, f: box plots (notched) over units of the trough amplitude
-(d bursting units, e non-bursting units) and of the trough width (f, bursting units) of the first and second spike of a burst, for ranges of inter-spike intervals.
-The arrangement is that of paper/figures/supp_fig3.pdf (positions measured on the vector figure) with every length multiplied by SCALE (spike_shape_plots) so that the
-whole figure is 185 mm high; text is Arial 5 pt (titles 7 pt), editable.
 """
 
 import numpy as np
@@ -16,8 +11,7 @@ from src.nodes.validation.spike_shape_plots import FONT, TITLE, SCALE, _Canvas, 
 BLACK, RED = (0, 0, 0), (0.8745, 0.1255, 0.1255)
 SPIKES = {"1st spike": ((0, 0, 0), (0.5020, 0.5020, 0.5020)), "2nd spike": ((1.0, 0, 0), (1.0, 0.7529, 0.7961)), "3rd spike": ((1.0, 0.6471, 0), (1.0, 0.6471, 0))}
 
-# Fig. S3c: three bursting units; per plot: unit, x (pt) of -1.25 ms, pt per ms, y (pt) = a + b * voltage (uV), spine x, y extent of the spine, x axis (x0, x1, y), y ticks (uV),
-# centre of the title and of the y label
+# Fig. S3c: three bursting units
 C_PLOTS = [
     dict(unit=2281009, x0=41.2, a=497.257, b=-3.4879, sx=37.1, ys=(476.4, 535.5), ax=(37.1, 126.4, 535.5), yticks=[4, 2, 0, -2, -4, -6, -8, -10], title=(82.2, 471.9), ylabel=(19.6, 506.0)),
     dict(unit=2873667, x0=216.0, a=495.851, b=-1.2347, sx=212.0, ys=(476.7, 535.8), ax=(212.0, 301.3, 535.8), yticks=[10, 0, -10, -20, -30], title=(259.4, 473.4), ylabel=(194.5, 506.35)),
@@ -29,7 +23,7 @@ C_REGION = (11.0, 446.0, 482.0, 556.0)
 
 
 def plot_bursts(df):
-    """Supplementary Fig. 3c from the source data (columns unit, mtype, etype, n_bursts, spike, time_ms, voltage_mean_uV, voltage_ci95_uV)"""
+    """Supplementary Fig. 3c from the source data"""
     cv = _Canvas(C_REGION)
     for pl in C_PLOTS:
         Yp = lambda v: pl["a"] + pl["b"] * np.asarray(v)
@@ -73,8 +67,7 @@ def plot_bursts(df):
     return cv.fig
 
 
-# Fig. S3d-f: box plots by ISI range. Per panel: groups (one axes each) with the x of the spine, y extent of the spine, bottom axis (x0, x1, y), x of the two boxes, centre of the
-# range label, of the significance mark; y calibration (pt of the value `v0` and pt per unit), y ticks, geometry of the labels
+# Fig. S3d-f: box plots by ISI range.
 def _groups(spines, y, axis_y, axis_w0, axis_w1, boxes, label_xy, sig_xy):
     return [dict(sx=s, ys=y, ax=(s + axis_w0, s + axis_w1, axis_y), boxes=b, label=l, sig=g) for s, b, l, g in zip(spines, boxes, label_xy, sig_xy)]
 
@@ -120,7 +113,7 @@ def _box_panel(df, cfg):
         mark = sig.get(rng)
         if grp["sig"] is not None and mark is not None:
             cv.text(*grp["sig"], str(mark))
-    # y axis ticks and labels (first group)
+    # y axis ticks and labels
     sx = cfg["groups"][0]["sx"]
     for v in cfg["yticks"]:
         y = float(Y(v))
@@ -145,7 +138,7 @@ def _box_panel(df, cfg):
 
 
 def _bxp(cv, st, xc, width, color, clip=None):
-    """Notched box plot at x = xc (pt of the paper) from the statistics of the values in pt of the paper (y down)"""
+    """Notched box plot at x = xc from the statistics of the values in pt"""
     X0 = float(cv.p(xc, 0)[0])
     w = width * SCALE
     notch_w = 0.5
@@ -167,7 +160,7 @@ def _bxp(cv, st, xc, width, color, clip=None):
         artists += cv.ax.plot([X0 - w / 4, X0 + w / 4], [yy, yy], color=color, linewidth=0.5, zorder=2, solid_capstyle="butt")
     fl = [qy(f) for f in st["fliers"]]
     artists += cv.ax.plot([X0] * len(fl), fl, linestyle="None", marker="o", markersize=1.5, markerfacecolor="k", markeredgecolor="k", markeredgewidth=0.3, zorder=4)
-    if clip is not None:       # the axis ends where the spine ends: what is beyond is clipped
+    if clip is not None:       # the axis ends where the spine ends
         from matplotlib.patches import Rectangle
         r = Rectangle((X0 - w, clip[0]), 2 * w, clip[1] - clip[0], transform=cv.ax.transData)
         for a in artists:
@@ -175,7 +168,7 @@ def _bxp(cv, st, xc, width, color, clip=None):
 
 
 def plot_trough_amplitudes_bursting(sheets):
-    """Supplementary Fig. 3d: `sheets` = (trough_amplitudes, statistics) dataframes of supp_fig3d.xlsx"""
+    """Supplementary Fig. 3d: `sheets` = dataframes of supp_fig3d.xlsx"""
     return _box_panel(sheets, D_PANEL)
 
 

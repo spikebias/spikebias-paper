@@ -212,7 +212,6 @@ def compute_snr(traces: np.array, cols: list):
 def get_snr_pdfs(norm_traces: np.ndarray, bins):
     """calculate amplitude-to-noise ratio distributions,
     their median and 95% confidence interval
-
     Args:
         norm_traces (np.ndarray): _description_
         bins (_type_): _description_
@@ -238,7 +237,6 @@ def get_snr_pdfs(norm_traces: np.ndarray, bins):
 
     # return stats
     dist_mean = np.median(np.array(proba_all), axis=0)
-    # dist_mean = np.array(proba_all).mean(axis=0)
     dist_ci = 1.96 * np.std(proba_all, axis=0) / np.sqrt(len(proba_all[0]))
 
     # store sites' data
@@ -262,11 +260,8 @@ def plot_snr_pdf_all(
     save_path="",
 ):
     """Plot distribution of voltage trace signal-to-noise ratio
-    with mean and 95% confidence intervals for the in vivo data and the biophysical
     model
-
     Args:
-
     Returns
     """
 
@@ -330,7 +325,6 @@ def plot_snr_pdf_all(
     axis.spines["left"].set_position(("axes", -0.05))
 
     # save figure source data
-    # in vivo
     pd.DataFrame(
         {"x": plot_x_value_v, "mean": plot_means_v, "ci": plot_cis_v}
     ).to_excel(save_path + "_v.xlsx", index=False)
@@ -367,11 +361,8 @@ def plot_anr_pdf_l5(
     save_path="",
 ):
     """Plot distribution of voltage trace signal-to-noise ratio
-    with mean and 95% confidence intervals for the in vivo data and the biophysical
     model
-
     Args:
-
     Returns
     """
 
@@ -446,7 +437,6 @@ def plot_anr_pdf_l5(
     axis.spines["left"].set_position(("axes", -0.05))
 
     # save figure source data
-    # in vivo
     pd.DataFrame(
         {"x": plot_x_value_v, "mean": plot_means_v, "ci": plot_cis_v}
     ).to_excel(save_path + "_v.xlsx", index=False)
@@ -474,11 +464,8 @@ def plot_anr_pdf_l5_demo(
     axis, mean_s, mean_e, ci_s, ci_e, bins, color_s: tuple, color_e: tuple, pm: dict
 ):
     """Plot distribution of voltage trace signal-to-noise ratio
-    with mean and 95% confidence intervals for the in vivo data and the biophysical
     model
-
     Args:
-
     Returns
     """
 
@@ -559,9 +546,7 @@ def plot_proba_dist_stats(
 
     # correct for meaningless negative bottom ci lines
     # because this is the probability space
-    # don't set to 0 but to a small number. 0 produces meaningless
     # bottom CI toward -inf on a log scale
-    # we set bottom ci to 0  on the probability space (y-axis)
     # bottom ci <= 0 produce meaningless values toward -inf on a log scale
     # we set bottom ci to the mean
 

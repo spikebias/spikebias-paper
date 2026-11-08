@@ -1,10 +1,6 @@
-"""Panel of Fig. 3d: extracellular spike of a layer 5 pyramidal cell in the traces summed over all cells, drawn from the source data
+"""Panel of Fig. 3d: extracellular spike of a layer 5 pyramidal cell in the traces summed over all cells
 
 author: laquitainesteeve@gmail.com
-
-Geometry of the panel in the paper (page 12 of paper/Laquitaine_NatureNeuro_2025.pdf, measured at 600 dpi and drawn here in the same pixel units, 1 px = 0.12 pt):
-5 rows x 4 columns of sites, each trace scaled to its own range; one grey per row (light, dark, darkest at the soma row, medium, light); black soma dot with a
-blue edge, arrow and label "Somata"; "200 um" bar (vertical) and "75 um" bar (horizontal); title in bold.
 """
 
 import numpy as np
@@ -12,7 +8,7 @@ from matplotlib import pyplot as plt
 from matplotlib.patches import Circle, FancyBboxPatch
 
 PX = 0.12                                               # pt per pixel
-X0, X1, Y0, Y1 = -80, 840, -10, 905                     # drawing area (px)
+X0, X1, Y0, Y1 = -80, 840, -10, 905                     # drawing area
 GRID_X0, COL_W = 135, 130                               # left edge and width of a column
 ROW_Y = [220, 345, 465, 590, 715]                       # centre of each row
 HALF_H = 55                                             # half height of a trace
@@ -30,7 +26,7 @@ def trace_xy(group, row, col, gap=0.0):
 
 
 def plot_source_data(df):
-    """Fig. 3d from the source data (columns row, col, channel, time, voltage, r, g, b, a)"""
+    """Fig. 3d from the source data"""
     fig = plt.figure(figsize=((X1 - X0) * PX / 72, (Y1 - Y0) * PX / 72))
     ax = fig.add_axes([0, 0, 1, 1])
     ax.set_xlim(X0, X1)

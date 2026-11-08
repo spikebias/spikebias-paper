@@ -39,24 +39,12 @@ warnings.filterwarnings(
 )
 np.seterr(invalid="ignore", divide="ignore")
 
-# DATASET -----------------------------------------------------------
+# DATASET
 
 def get_good_sorted_unit_ids(
     quality, quality_path: str, sorter: str, exp: str, layer: str, fltd_unit: list
 ):
-    """_summary_
-
-    Args:
-        quality (_type_): _description_
-        quality_path (str): _description_
-        sorter (str): _description_
-        exp (str): _description_
-        layer (str): _description_
-        fltd_unit (list): _description_
-
-    Returns:
-        np.array(int): filtered sorted unit ids
-    """
+    """_summary_"""
     # load quality results
     unit_quality = pd.read_csv(quality_path)
 
@@ -75,19 +63,7 @@ def get_good_sorted_unit_ids(
 def get_poor_sorted_unit_ids(
     quality, quality_path: str, sorter: str, exp: str, layer: str, fltd_unit: list
 ):
-    """_summary_
-
-    Args:
-        quality (_type_): _description_
-        quality_path (str): _description_
-        sorter (str): _description_
-        exp (str): _description_
-        layer (str): _description_
-        fltd_unit (list[int]): _description_
-
-    Returns:
-        np.array[int]: filtered sorted unit ids
-    """
+    """_summary_"""
     np.array(fltd_unit).astype(int)
 
     # load quality results
@@ -112,37 +88,22 @@ def get_spike_dataset_for(
     sfreq: int,
     downsample: int,
 ):
-    """_summary_
-
-    Args:
-        unit_ids (np.array[int]): _description_
-        we (_type_): _description_
-        max_spikes (int): _description_
-        interval_ms (float): _description_
-        sfreq (int): _description_
-        downsample (int): downsample waveforms to produce
-        - a lower sampling frequency (e.g., 2 to reduce a 40 KHz frequency
-        to 20 KHz)
-
-    Returns:
-        _type_: _description_
-    """
+    """_summary_"""
 
     # convert interval in ms to samples
     ttp_sp = we.nbefore
     bef_aft_sp = interval_ms * sfreq / 1000
     interval = np.arange(ttp_sp - bef_aft_sp, ttp_sp + bef_aft_sp, 1).astype(int)
 
-    # get all units nearest channels (with extremum amplitude)
+    # get all units nearest channels
     max_chids = ttools.get_template_extremum_channel(we, peak_sign="both")
 
     # loop over good units
-    # 240 samples (-3 to 3 ms at 40KHz)
     wvs = np.zeros((int(max_spikes * we.nbefore * 2 / downsample), 1))
     unit_label = []
     for unit in unit_ids:
 
-        # get its waveforms (num_spikes, num_samples, num_channels)
+        # get its waveforms
         wv = we.get_waveforms(unit_id=unit)
 
         # get its nearest channel
@@ -150,9 +111,7 @@ def get_spike_dataset_for(
         max_chid = max_chids[unit]
         max_chid_ix = np.where(c_ids == max_chid)[0][0]
 
-        # get waveform for that channels (2D)
-        # and (num_samples, num_spikes)
-        # TODO: sample instead of taking the first ones
+        # get waveform for that channels
         wv_i = np.array(wv[:max_spikes, interval[::downsample], max_chid_ix]).flatten()[
             :, None
         ]
@@ -161,7 +120,6 @@ def get_spike_dataset_for(
         wvs = np.hstack([wvs, wv_i])
 
     wvs = wvs[:, 1:]
-    # unit_label = np.array(unit_label)
     unit_label = np.array(unit_ids)
     return wvs, unit_label
 
@@ -171,17 +129,7 @@ def get_sorted_unit_best_score(
     GT_ns_10m: str,
     sfreq:int
 ):
-    """Get sorted unit best agreement scores
-
-    Args:
-        KS4_ns_10m (str): path of SortingExtractor
-        GT_ns_10m (str): path of GroundTruth SortingExtractor
-
-    Returns:
-        pd.Series:
-        - index_ sorted units
-        - values: agreement scores
-    """
+    """Get sorted unit best agreement scores"""
     # load 
     SortingTrue = si.load_extractor(GT_ns_10m)
     
@@ -224,27 +172,9 @@ def get_dataset_for(
     sfreq: int,
     downsample: int,
 ):
-    """get dataset
+    """get dataset"""
 
-    Args:
-        we (WaveformExtractor): WaveformExtractor
-        quality_path (str): path of the pandas dataframe
-        - containing sorted unit quality classification
-        sorter (str): one of "KS4", "KS3", "KS2.5", "KS2"...
-        - contained in the quality dataframe in the "sorter" column
-        exp (str): _description_
-        layer (str): _description_
-        max_spikes (int): _description_
-        flt_unit (list[int]): _description_
-        interval_ms (float): _description_
-        sfreq (int): _description_
-        downsample
-
-    Returns:
-        _type_: _description_
-    """
-
-    # get good units (filtered based on some conditions)
+    # get good units
     g_units = get_good_sorted_unit_ids(
         "good", quality_path, sorter, exp, layer, flt_unit
     )
@@ -252,7 +182,7 @@ def get_dataset_for(
         g_units, we, max_spikes, interval_ms, sfreq, downsample
     )
 
-    # poor units (filtered based on some conditions)
+    # poor units
     p_units = get_poor_sorted_unit_ids(
         "mixed: overmerger + oversplitter", quality_path, sorter, exp, layer, flt_unit
     )
@@ -263,7 +193,7 @@ def get_dataset_for(
     # spike dataset
     spike_data = np.hstack([wvs_good, wvs_poor]).T
 
-    # quality label (1D discrete, CEBRA can handle only one)
+    # quality label
     quality_label = np.hstack(
         [np.array([1] * len(good_unit_label)), np.array([0] * len(poor_unit_label))]
     )
@@ -285,27 +215,9 @@ def get_dataset_by_layer(
     interval_ms: float,
     downsample: int,
 ):
-    """get a dataset by layer
-
-    Args:
-        sort_path (str): _description_
-        gt_path (str): ground truth SortingExtractor
-        STUDY (str): _description_
-        quality_path (str): _description_
-        sorter (str): _description_
-        exp (str): _description_
-        num_spike (int): _description_
-        interval_ms (float): _description_
-        downsample (int): can be a factor of 1, 2, 3 ...
-
-    Returns:
-        dict: _description_
-    """
+    """get a dataset by layer"""
 
     # calculate the common maximum number
-    # of spikes that it is possible to use
-    # across all units (the number of spikes of the
-    # least active unit)
     Sorting = si.load_extractor(sort_path)
     unit_spike = Sorting.get_total_num_spikes()
     sfreq = Sorting.get_sampling_frequency()
@@ -323,20 +235,6 @@ def get_dataset_by_layer(
     we = si.WaveformExtractor.load_from_folder(study)
 
     # get data for CEBRA by layer
-    # L2/3
-    # spike_data_l23, quality_label_l23, unit_ids_l23 = get_dataset_for(
-    #     we,
-    #     quality_path,
-    #     sorter,
-    #     exp,
-    #     "L2/3",
-    #     num_spike,
-    #     flt_unit,
-    #     interval_ms,
-    #     sfreq,
-    #     downsample,
-    # )
-    # L4
     spike_data_l4, quality_label_l4, unit_ids_l4 = get_dataset_for(
         we,
         quality_path,
@@ -349,7 +247,6 @@ def get_dataset_by_layer(
         sfreq,
         downsample,
     )
-    # L5
     spike_data_l5, quality_label_l5, unit_ids_l5 = get_dataset_for(
         we,
         quality_path,
@@ -362,7 +259,6 @@ def get_dataset_by_layer(
         sfreq,
         downsample,
     )
-    # L6
     spike_data_l6, quality_label_l6, unit_ids_l6 = get_dataset_for(
         we,
         quality_path,
@@ -384,17 +280,17 @@ def get_dataset_by_layer(
     print("ex. data shape (L4):", spike_data_l4.shape)
     print("ex. label shape (L4):", quality_label_l4.shape)
 
-    # bundle dataset for model 1 (by layer)
+    # bundle dataset for model 1
     dataset1 = {
-        # "data_l23": spike_data_l23,
+        # "data_l23": spike_data_l23
         "data_l4": spike_data_l4,
         "data_l5": spike_data_l5,
         "data_l6": spike_data_l6,
-        # "label_l23": quality_label_l23,
+        # "label_l23": quality_label_l23
         "label_l4": quality_label_l4,
         "label_l5": quality_label_l5,
         "label_l6": quality_label_l6,
-        # "unit_ids_l23": unit_ids_l23,
+        # "unit_ids_l23": unit_ids_l23
         "unit_ids_l4": unit_ids_l4,
         "unit_ids_l5": unit_ids_l5,
         "unit_ids_l6": unit_ids_l6,
@@ -406,20 +302,6 @@ def get_dataset_by_layer(
 
 def get_dataset_pooled(dat1):
 
-    # spike_data = np.vstack(
-    #     [dat1["data_l23"], dat1["data_l4"], dat1["data_l5"], dat1["data_l6"]]
-    # )
-    # quality_label = np.hstack(
-    #     [dat1["label_l23"], dat1["label_l4"], dat1["label_l5"], dat1["label_l6"]]
-    # )
-    # unit_ids = np.hstack(
-    #     [
-    #         dat1["unit_ids_l23"],
-    #         dat1["unit_ids_l4"],
-    #         dat1["unit_ids_l5"],
-    #         dat1["unit_ids_l6"],
-    #     ]
-    # )
     spike_data = np.vstack([dat1["data_l4"], dat1["data_l5"], dat1["data_l6"]])
     quality_label = np.hstack([dat1["label_l4"], dat1["label_l5"], dat1["label_l6"]])
     unit_ids = np.hstack(
@@ -456,19 +338,7 @@ def vanilla_cv_split(label, split, seed):
 
 
 def plot_em(ax, CebraL4_em, quality_label, xlim):
-    """plot the embedding, on which dots are
-    sorted units colored by sorting quality
-    (good in "red", poor in "black")
-
-    Args:
-        ax (_type_): axis
-        CebraL4_em (np.array): embedding
-        quality_label (np.array): quality labels
-        - (1: good, 0: poor)
-
-    Returns:
-        scat: plot handle
-    """
+    """plot the embedding, on which dots are sorted units colored by sorting quality"""
     # set color for good units in red, poor in black
     colr = np.array(["None"] * len(quality_label))
     colr[quality_label == 1] = "r"
@@ -486,7 +356,6 @@ def plot_em(ax, CebraL4_em, quality_label, xlim):
         s=20,
     )
     # aesthetics
-    # disconnect axes (R style)
     ax.spines[["right", "top"]].set_visible(False)
     ax.spines["bottom"].set_position(("axes", -0.05))
     ax.spines["left"].set_position(("axes", -0.05))
@@ -500,21 +369,12 @@ def plot_em(ax, CebraL4_em, quality_label, xlim):
 def plot_model1_em_by_layer(fig, dataset, em, xlim):
 
     # L2/3
-    # ax = fig.add_subplot(1, 4, 1, projection="3d")
-    # scat = plot_em(ax, em["l23"], dataset["label_l23"], xlim)
-    # ax.set_title("L2/3")
-    # L4
-    # ax = fig.add_subplot(1, 4, 2, projection="3d")
     ax = fig.add_subplot(1, 3, 1, projection="3d")
     scat = plot_em(ax, em["l4"], dataset["label_l4"], xlim)
     ax.set_title("L4")
-    # L5
-    # ax = fig.add_subplot(1, 4, 3, projection="3d")
     ax = fig.add_subplot(1, 3, 2, projection="3d")
     scat = plot_em(ax, em["l5"], dataset["label_l5"], xlim)
     ax.set_title("L5")
-    # L6
-    # ax = fig.add_subplot(1, 4, 4, projection="3d")
     ax = fig.add_subplot(1, 3, 3, projection="3d")
     scat = plot_em(ax, em["l6"], dataset["label_l6"], xlim)
     ax.set_title("L6")
@@ -528,9 +388,7 @@ def plot_model2_em_by_layer(fig, dataset, em, xlim):
 
 
 def decode(embed_train, embed_test, label_train, label_test):
-    """decoding using a k-Nearest Neighbor clustering technique
-    We use the fixed number of neighbors 2
-    """
+    """decoding using a k-Nearest Neighbor clustering technique We use the fixed number of neighbors 2"""
     # predict
     decoder = cebra.KNNDecoder(n_neighbors=2, metric="cosine")
 
@@ -541,7 +399,6 @@ def decode(embed_train, embed_test, label_train, label_test):
     prediction = decoder.predict(embed_test)
 
     # calculate performance metrics
-    # precision and recall are for label 1 ("good" units)
     accuracy = sklearn.metrics.accuracy_score(label_test, prediction)
     bal_accuracy = sklearn.metrics.balanced_accuracy_score(label_test, prediction)
     precision = sklearn.metrics.precision_score(label_test, prediction, pos_label=1)
@@ -563,7 +420,7 @@ def decode(embed_train, embed_test, label_train, label_test):
     }
 
 
-# UNIT QUALITY METRICS ---------------------------------------
+# UNIT QUALITY METRICS
 
 
 def get_waveformExtractor_for_single_units(
@@ -576,19 +433,7 @@ def get_waveformExtractor_for_single_units(
     n_components=5,
     job_kwargs:dict={}
 ):
-    """Setup WaveformExtractors to calculate quality metrics for single units
-
-    Args:
-        sort_path (str): _description_
-        study_path (_type_): _description_
-        save_path (str): _description_
-        n_sites (int, optional): _description_. Defaults to 384.
-        load_if_exists: bool=False (bool)
-        add_pca (bool): only if load_if_exists=False
-
-    Returns:
-        _type_: _description_
-    """
+    """Setup WaveformExtractors to calculate quality metrics for single units"""
 
     # compute
     if not load_if_exists:
@@ -602,8 +447,6 @@ def get_waveformExtractor_for_single_units(
         We = si.WaveformExtractor.load_from_folder(study_path)
 
         # create waveformExtractor for single units
-        # which we will keep for all downstream analyses
-        # this should speed up computations
         shutil.rmtree(save_path, ignore_errors=True)
         WeSu = We.select_units(unit_ids=su_unit_ids, new_folder=save_path)
 
@@ -626,23 +469,13 @@ def get_waveformExtractor_for_single_units(
 
 
 def add_spike_amplitude_extension(we, n_sites, load_if_exists: bool):
-    """Add spike amplitudes to WaveformExtractor
-
-    Args:
-        we (WaveformExtractor): _description_
-        n_sites (int): typically 384 for neuropixels
-        load_if_exists (bool): load if exists
-
-    Returns:
-        WaveformExtractor: _description_
-    """
+    """Add spike amplitudes to WaveformExtractor"""
 
     # these two properties are required to compute amplitudes
     we.recording.set_property("gain_to_uV", np.ones((n_sites,)))
     we.recording.set_property("offset_to_uV", np.zeros((n_sites,)))
 
     # compute spike amplitudes
-    # or it as an extension
     if not load_if_exists:
         _ = si.postprocessing.compute_spike_amplitudes(we, outputs="by_unit")
     else:
@@ -656,7 +489,6 @@ def add_spike_amplitude_extension(we, n_sites, load_if_exists: bool):
 def get_quality_metrics(KS4_ns_10m, STUDY_ns, STUDY_ns_su, n_sites, load_if_exists):
 
     # (40s)for single units
-    # note: adding PCA takes 3 hours (do once, then set load_if_exists=True)
     WeNs = get_waveformExtractor_for_single_units(
         KS4_ns_10m, STUDY_ns, STUDY_ns_su, n_sites=384, load_if_exists=True
     )
@@ -664,7 +496,6 @@ def get_quality_metrics(KS4_ns_10m, STUDY_ns, STUDY_ns_su, n_sites, load_if_exis
     WeNs = add_spike_amplitude_extension(WeNs, n_sites=384, load_if_exists=True)
 
     # pre-compute Spiketinterface quality metrics
-    # 20 secs/unit
     qmetrics = qm(
         WeNs,
         qm_params={
@@ -672,7 +503,7 @@ def get_quality_metrics(KS4_ns_10m, STUDY_ns, STUDY_ns_su, n_sites, load_if_exis
                 "peak_sign": "neg",
                 "num_histogram_bins": 100,
                 "histogram_smoothing_value": 3,
-                "amplitudes_bins_min_ratio": 0,  # instead of 5
+                "amplitudes_bins_min_ratio": 0,
             }
         },
         load_if_exists=load_if_exists,
@@ -693,7 +524,7 @@ def get_quality_metrics(KS4_ns_10m, STUDY_ns, STUDY_ns_su, n_sites, load_if_exis
         ]
     ]
 
-    # add silhouette metric (pca-based but fast enough)
+    # add silhouette metric
     silhouette = qm(
         WeNs,
         metric_names=["silhouette"],
@@ -716,7 +547,7 @@ def get_best_site_mad_noise(we, max_chids, unit):
     # get waveforms
     wv, _ = we.get_waveforms(unit_id=unit, with_index=True)
 
-    # get channel ids (sparse)
+    # get channel ids
     c_ids = we.sparsity.unit_id_to_channel_ids[unit]
 
     # get nearest channel
@@ -731,15 +562,7 @@ def mad(data):
 
 
 def get_mad_ratio(spike_amp, noise_amp):
-    """calculate an sd_ratio robust to outliers
-
-    Args:
-        spike_amp (_type_): _description_
-        noise_amp (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """
+    """calculate an sd_ratio robust to outliers"""
     mad_unit = mad(spike_amp)  # twice smaller than std
     mad_noise = mad(noise_amp)
     return mad_unit / mad_noise
@@ -760,35 +583,16 @@ def load_results(file_path):
     return predictions_all
 
 
-# MODEL ------------------------------------
+# MODEL
 
 
 def loglike(fit_output, params, scale: float, exog: np.ndarray, endog: np.array):
-    """Calculate the log likelihood of observing the true sorting accuracies "endog"
-    given the fitted glm model "fit_output"
-    you can get by inspecting result_1.model.loglike
-    code = inspect.getsource(result_1.model.loglike)
-    print(code)
-
-    Args:
-        fit_output: fitted glm model
-        exog: predictive features used to make predictions
-        - independent variables
-        endog: true sorting accuracy (dependent variable)
-
-    Note:
-        Setting the args as below should produce llf == fit_output.llf
-        that is the log likelihood nproduced from fitting the training
-        data
-        - exog = fit_output.model.exog
-        - endog = fit_output.model.endog
-    """
+    """Calculate the log likelihood of observing the true sorting accuracies "endog" given the fitted glm model "fit_output" you can get by inspecting result_1.model.loglike code = inspect.getsource(result_1.model.loglike) print(code)"""
     scale = float_like(scale, "scale", optional=True)
     var_weights = np.ones(exog.shape[0])
     freq_weights = np.ones(exog.shape[0])
 
     # make predictions
-    # - same as calling result.model.predict(params, exog)
     linear_preds = np.dot(exog, params) + fit_output.model._offset_exposure
     expval = fit_output.model.family.link.inverse(linear_preds)
     if scale is None:
@@ -812,24 +616,11 @@ def get_single_fold_mcf_r2(
     seed: int = 0,
     scale_data=False,
 ):
-    """Calculate mcfadden pseudo r-squared for a single fold, sampling
-    split_ratio instances of the dataset as train and 1-split_ratio as test
-
-    Args:
-        model_formula
-
-    note:
-        - mcfadden r2 formula: (1 - result_1.llf / result_1.llnull)
-        - produced by statsmodel r2 = test_model.pseudo_rsquared(kind="mcf")
-
-    Returns:
-        mcfadden pseudo r-squared (float)
-    """
+    """Calculate mcfadden pseudo r-squared for a single fold"""
     # GET MCF R2 FOR TEST MODEL
     random.seed(seed)
 
-    # TRAIN -----------
-    # calculate 75% of train
+    # TRAIN
     n_train = np.round(split_ratio * dataset.shape[0]).astype(int)
 
     # sample n_train
@@ -861,8 +652,7 @@ def get_single_fold_mcf_r2(
     except:
         raise ValueError("Model formula is wrong")
 
-    # TEST -----------
-    # create test dataset with remaining instances
+    # TEST
     test_indices = list(set(indices) - set(train_indices))
     test_dataset = dataset.iloc[test_indices, :]
 
@@ -871,7 +661,6 @@ def get_single_fold_mcf_r2(
         test_dataset[predictors] = standard_scaler.transform(test_dataset[predictors])
 
     # reorder test dataset features and add intercept
-    # to make predictions and get loglikelihood
     features = result_1.params.index[1:]
     test_features = test_dataset.loc[:, features]
     test_features.insert(0, "intercept", 1)
@@ -918,17 +707,7 @@ def get_crossval_mcf_r2(
     seeds: np.array = np.arange(0, 100, 1),
     scale_data=False,
 ):
-    """Calculate cross-validated mcfadden pseudo r-squared
-    on test dataset
-
-    Args:
-        model_formula (str): glm model formula
-        split_ratio (float, optional): _description_. Defaults to 0.75.
-        seeds (np.array, optional): _description_. Defaults to np.arange(0, 100, 1).
-
-    Returns:
-        np.array: mcfadden pseudo r-squared
-    """
+    """Calculate cross-validated mcfadden pseudo r-squared on test dataset"""
     r2_all = []
     for seed in range(len(seeds)):
         r2 = get_single_fold_mcf_r2(
@@ -938,12 +717,6 @@ def get_crossval_mcf_r2(
             seed=seed,
             scale_data=scale_data,
         )
-        # print(
-        #     "Nan because SVD did not converge in Linear Least Squares because of wrong covariance matrix()"
-        # )
-        # # can fail if SVD did not converge in Linear Least Squares
-        # # because of wrong covariance matrix
-        # r2 = np.nan
         r2_all.append(r2)
     return np.array(r2_all)
 
@@ -956,28 +729,16 @@ def get_single_fold_flclassifier_metrics(
     thresh: float = 0.8,
     scale_data=False,
 ):
-    """Calculate the cross-validated precisions
-    and recalls of a fractional logistic classifier
-    trained to predict high-quality unit label-
-
-    Args:
-        model_formula
-
-    Returns:
-        precisions and recalls for each fold
-    """
+    """Calculate the cross-validated precisions and recalls of a fractional logistic classifier trained to predict high-quality unit label-"""
     # GET MCF R2 FOR TEST MODEL
     random.seed(seed)
 
     # unit-test
-    # this is a ground truth label that should not
-    # be in the dataset
     assert (
         not "sorting_accuracy" in dataset.columns
     ), "drop sorting_accuracy from dataset"
 
-    # TRAIN -----------
-    # calculate 75% of train
+    # TRAIN
     n_train = np.round(split_ratio * dataset.shape[0]).astype(int)
 
     # sample n_train
@@ -1005,9 +766,7 @@ def get_single_fold_flclassifier_metrics(
     except:
         raise ValueError("Model formula is wrong")
 
-    # TEST -----------
-    # create test dataset with remaining instances
-    # make sure to drop quality label from test dataset
+    # TEST
     test_indices = list(set(indices) - set(train_indices))
     test_dataset = dataset.iloc[test_indices, :]
     test_label = test_dataset["quality_label"]
@@ -1023,7 +782,6 @@ def get_single_fold_flclassifier_metrics(
     assert not "quality_label" in test_dataset.columns, "drop quality label from test"
 
     # reorder test dataset features and add intercept
-    # to make predictions
     features = result_1.params.index[1:]
     test_features = test_dataset.loc[:, features]
     test_features.insert(0, "intercept", 1)
@@ -1031,8 +789,7 @@ def get_single_fold_flclassifier_metrics(
     # unit-test
     assert not "quality_label" in features, "drop quality label from features"
 
-    # predict -------------
-    # thresholded binary predictions
+    # predict
     predictions = (result_1.predict(test_features) >= thresh).astype(int)
     precision = metrics.precision_score(test_label, predictions)
     recall = metrics.recall_score(test_label, predictions)
@@ -1043,17 +800,8 @@ def train_classifier_on_full_dataset(
     model_formula: str,
     dataset: pd.DataFrame,
 ):
-    """train the classifier on the full dataset
-
-    Args:
-        model_formula
-
-    Returns:
-        precisions and recalls for each fold
-    """
+    """train the classifier on the full dataset"""
     # unit-test
-    # this is a ground truth label that should not
-    # be in the dataset
     assert (
         not "sorting_accuracy" in dataset.columns
     ), "drop sorting_accuracy from dataset"
@@ -1079,17 +827,7 @@ def get_crossval_flclassifier_metrics(
     thresh: float = 0.8,
     scale_data=False,
 ):
-    """Calculate cross-validated mcfadden pseudo r-squared
-    on test dataset
-
-    Args:
-        model_formula (str): glm model formula
-        split_ratio (float, optional): _description_. Defaults to 0.75.
-        seeds (np.array, optional): _description_. Defaults to np.arange(0, 100, 1).
-
-    Returns:
-        np.array: mcfadden pseudo r-squared
-    """
+    """Calculate cross-validated mcfadden pseudo r-squared on test dataset"""
     results = []
     for seed in range(len(seeds)):
         result = get_single_fold_flclassifier_metrics(
@@ -1116,7 +854,7 @@ def train_test_eval(model_formula, dataset, seeds, scale_data=False):
         scale_data=scale_data,
     )
 
-    # PERFORMANCE -----------------------------
+    # PERFORMANCE
 
     # make arrays
     precisions = []
@@ -1166,7 +904,7 @@ def train_test_eval(model_formula, dataset, seeds, scale_data=False):
         zorder=np.inf,
     )
 
-    # disconnect axes (R style)
+    # disconnect axes
     ax.spines[["right", "top"]].set_visible(False)
     ax.spines["bottom"].set_position(("axes", -0.05))
     ax.yaxis.set_ticks_position("left")
@@ -1184,14 +922,14 @@ def interpret_features_weights(model_formula, dataset, predictive_metrics):
     )
     weights = model_result.params
 
-    # build table of features contributions  ---------------
+    # build table of features contributions
 
     # add feature weights
     weights_for_df = weights.drop(index="Intercept")
     weights_df = weights_for_df.to_frame()
     weights_df.columns = ["weights"]
 
-    # add p-values (fit to entire dataset)
+    # add p-values
     pvalues_df = model_result.pvalues.drop(index="Intercept")
     pvalues_df = pvalues_df.to_frame()
     pvalues_df.columns = ["weight p-value"]

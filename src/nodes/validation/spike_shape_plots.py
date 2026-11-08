@@ -1,10 +1,6 @@
 """Panels of Supplementary Fig. 3 drawn from the source data and rescaled to the height the journal guidelines allow
 
 author: laquitainesteeve@gmail.com
-
-The arrangement of the panels and of their subplots is that of paper/figures/supp_fig3.pdf (positions measured on the vector figure, see
-spike_shape_layout.py), with every length multiplied by SCALE so that the whole figure is at most 185 mm high instead of the paper's 241 mm. Text is Arial 5 pt (titles
-7 pt, bold) whatever the scale, and editable.
 """
 
 import numpy as np
@@ -18,7 +14,7 @@ from src.nodes.validation.spike_shape_layout import A_SUBPLOTS, B_SUBPLOTS
 
 FONT, TITLE = 5, 7
 TARGET_HEIGHT_PT = 185.0 / 25.4 * 72     # 185 mm: figure height for a legend of less than 300 words
-SCALE = 0.735                            # the stacked panels a, c and d-f (699.7 pt of the paper's layout, with their margins) are 514 pt = 181.5 mm high
+SCALE = 0.735                            # the stacked panels a, c and d-f are 514 pt = 181.5 mm high
 LW = 0.5
 RED, ORANGE = (0.8392, 0.1529, 0.1569), (1.0, 0.498, 0.0549)
 BLUE, PURPLE = (0.1216, 0.4667, 0.7059), (0.5804, 0.4039, 0.7412)
@@ -30,7 +26,7 @@ def _ink(s, size=FONT, bold=False, rotation=0):
 
 
 def _ctext(ax, cx, cy, s, size=FONT, bold=False, rotation=0, color="k"):
-    """Text whose ink bounding box is centred on (cx, cy) (pt of the scaled figure, y down)"""
+    """Text whose ink bounding box is centred on (cx, cy)"""
     e = _ink(s, size, bold, rotation)
     ax.text(cx - (e.x0 + e.x1) / 2, cy + (e.y0 + e.y1) / 2, s, ha="left", va="baseline", rotation=rotation, rotation_mode="anchor", fontsize=size,
             fontweight="bold" if bold else "normal", color=color)
@@ -54,7 +50,7 @@ def _decimals(ticks):
 
 
 class _Canvas:
-    """Canvas in the pt of the paper's figure multiplied by SCALE (y down); the coordinates given to the methods are those of the paper"""
+    """Canvas in the pt of the figure multiplied by SCALE"""
 
     def __init__(self, region):
         x0, y0, x1, y1 = region
@@ -121,7 +117,7 @@ def _waveforms(df, subplots, region, colors, title, legend, ylabel, xlabels, ann
 
 
 def plot_excitatory(df):
-    """Supplementary Fig. 3a: spike-triggered average of 16 excitatory neurons (columns synapse_class, column, row, mtype, electrode, time_ms, voltage_mV)"""
+    """Supplementary Fig. 3a: spike-triggered average of 16 excitatory neurons"""
     legend = [(107.07, 12.55, 119.87, 14.52, RED, 122.8, 13.35, "Above somata"), (107.0, 20.8, 119.8, 22.77, ORANGE, 123.4, 21.35, "Below somata")]
     annotations = [(89.7, 32.2, "Positive spikes", RED), (94.8, 47.3, "Regular spike", ORANGE), (87.0, 284.6, "Triphasic spike", RED), (87.9, 311.5, "Regular spike", ORANGE)]
     return _waveforms(df, A_SUBPLOTS, (13.6, -5.0, 223.56, 444.2), (RED, ORANGE), (136.55, -0.5, "Excitatory model neurons"), legend, (16.4, 204.05),

@@ -10,7 +10,6 @@ from matplotlib import pyplot as plt
 import sklearn
 import seaborn as sns
 from sklearn import metrics
-# import cebra.models
 import pickle
 import copy
 from sklearn.preprocessing import StandardScaler
@@ -40,19 +39,7 @@ def get_waveformExtractor_for_single_units(
     add_pca: bool = True,
     n_components=5,
 ):
-    """Setup WaveformExtractors to calculate quality metrics for single units
-
-    Args:
-        sort_path (str): _description_
-        study_path (_type_): _description_
-        save_path (str): _description_
-        n_sites (int, optional): _description_. Defaults to 384.
-        load_if_exists: bool=False (bool)
-        add_pca (bool): only if load_if_exists=False
-
-    Returns:
-        _type_: _description_
-    """
+    """Setup WaveformExtractors to calculate quality metrics for single units"""
 
     # compute
     if not load_if_exists:
@@ -66,8 +53,6 @@ def get_waveformExtractor_for_single_units(
         We = si.WaveformExtractor.load_from_folder(study_path)
 
         # create waveformExtractor for single units
-        # which we will keep for all downstream analyses
-        # this should speed up computations
         shutil.rmtree(save_path, ignore_errors=True)
         WeSu = We.select_units(unit_ids=su_unit_ids, new_folder=save_path)
 
@@ -95,15 +80,7 @@ def mad(data):
 
 
 def get_mad_ratio(spike_amp, noise_amp):
-    """calculate an sd_ratio robust to outliers
-
-    Args:
-        spike_amp (_type_): _description_
-        noise_amp (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """
+    """calculate an sd_ratio robust to outliers"""
     mad_unit = mad(spike_amp)  # twice smaller than std
     mad_noise = mad(noise_amp)
     return mad_unit / mad_noise
@@ -114,7 +91,7 @@ def get_best_site_mad_noise(we, max_chids, unit):
     # get waveforms
     wv, _ = we.get_waveforms(unit_id=unit, with_index=True)
 
-    # get channel ids (sparse)
+    # get channel ids
     c_ids = we.sparsity.unit_id_to_channel_ids[unit]
 
     # get nearest channel
@@ -133,23 +110,13 @@ def get_mad_ratio_all_units(unit_ids, WeNS, spike_amp):
 
 
 def add_spike_amplitude_extension(we, n_sites, load_if_exists: bool, job_kwargs:dict):
-    """Add spike amplitudes to WaveformExtractor
-
-    Args:
-        we (WaveformExtractor): _description_
-        n_sites (int): typically 384 for neuropixels
-        load_if_exists (bool): load if exists
-
-    Returns:
-        WaveformExtractor: _description_
-    """
+    """Add spike amplitudes to WaveformExtractor"""
 
     # these two properties are required to compute amplitudes
     we.recording.set_property("gain_to_uV", np.ones((n_sites,)))
     we.recording.set_property("offset_to_uV", np.zeros((n_sites,)))
 
     # compute spike amplitudes
-    # or it as an extension
     if not load_if_exists:
         _ = si.postprocessing.compute_spike_amplitudes(we, outputs="by_unit", **job_kwargs)
     else:
@@ -169,23 +136,7 @@ def get_quality_metrics(sorting_path: str,
                         add_pca=False,
                         skip_pc_metrics=True, 
                         job_kwargs:dict={}):
-    """_summary_
-
-    Args:
-        sorting_path (str): path of SortingExtractor
-        study_path_all (str): path of WaveformExtractor for all sorted units
-        study_path_su (str): path of WaveformExtractor for sorted single units
-        load_qm_if_exists (bool): load quality metrics if exist
-        n_sites (int, optional): _description_. Defaults to 384.
-        add_pca (bool): takes 3 hours, computes pca of waveforms
-        skip_pc_metrics (bool): whether the PCA-based quality metrics are computed 
-        ... (isolation_distance, l_ratio, d_prime, nearest_neighbor metrics, 
-        ... silhouette_score)
-
-
-    Returns:
-        _type_: _description_
-    """
+    """_summary_"""
     # setup waveform extractor to compute unit quality metrics
     WeNs = get_waveformExtractor_for_single_units(
         sorting_path, study_path_all, study_path_su, n_sites=n_sites, 
@@ -197,7 +148,7 @@ def get_quality_metrics(sorting_path: str,
                                          load_if_exists=load_qm_if_exists, 
                                          job_kwargs=job_kwargs)
 
-    # compute quality metrics (20 secs/unit)
+    # compute quality metrics
     qmetrics = qm(
         WeNs,
         qm_params={
@@ -228,7 +179,7 @@ def get_quality_metrics(sorting_path: str,
         ]
     ]
 
-    # add silhouette metric (pca-based but fast enough)
+    # add silhouette metric
     silhouette = qm(
         WeNs,
         metric_names=["silhouette"],
@@ -261,17 +212,7 @@ def get_evaluated_sorted_single_units_quality_metrics(
     load_qm_if_exists=False,
     job_kwargs={}
 ):
-    """Compute metrics of quality for each sorted single-unit
-
-    Args:
-        single_unit_ids (_type_): _description_
-        sorting_path (_type_): _description_
-        study_all_path (_type_): _description_
-        study_su_path (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """
+    """Compute metrics of quality for each sorted single-unit"""
     # get WaveformExtractor
     We = si.WaveformExtractor.load_from_folder(study_su_path)
     print("DEBUGGING We.unit_id", We.unit_ids)
@@ -300,24 +241,15 @@ def get_evaluated_sorted_single_units_quality_metrics(
     mad_ratio = get_mad_ratio_all_units(qmetrics.index, We, spike_amp)
     qmetrics["mad_ratio"] = mad_ratio
 
-    # filter qualified single-units (in sorting_quality.py pipeline)
+    # filter qualified single-units
     qmetrics = qmetrics.loc[single_unit_ids, :]
     return qmetrics
 
 
 def get_good_and_bad_units(quality_path: str, exp="NS", sorter="KS4"):
-    """_summary_
-
-    Args:
-        quality_path (str): _description_
-
-    Returns:
-        _type_: _description_
-    """
+    """_summary_"""
     
     # load table of sorted units categorized based
-    # on their biases ("overmerging", "oversplitting"
-    # ...)
     unit_quality = pd.read_csv(quality_path)
 
     # select good units
@@ -350,9 +282,6 @@ def format_dataset(qmetric, good_unit_id, bad_unit_id, sorting_path, GT_ns_10m):
     dataset = copy.copy(qmetric)
 
     # curate metrics
-    # - presence_ratio is constant
-    # - note that firing rate is correlated with firing range so we dropped firing rate
-    # - note that sd_ratio and mad_ratio are strongly correlated
     dataset = dataset.drop(columns=["presence_ratio"])
 
     # selected metrics

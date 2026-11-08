@@ -1,8 +1,4 @@
-"""Layout of the subplots of Supplementary Fig. 3a (excitatory neurons) and 3b (inhibitory neurons) measured on paper/figures/supp_fig3.pdf (pt, y down)
-
-Generated from the vector figure: for each subplot the y spine, the detached x axis, the y limits (from the affine fit of the paper's traces on the source data), the
-y ticks (values) and the x position of the ticks of the bottom row. Do not edit by hand.
-"""
+"""Layout of the subplots of Supplementary Fig. 3a and 3b measured on paper/figures/supp_fig3.pdf"""
 
 A_SUBPLOTS = [
     dict(col=1, row=1, mtype='L6_TPC:C', spine_x=42.80, y_top=29.66, y_bot=71.54, axis=(46.41, 118.74, 73.63), vmax=0.12206, vmin=-0.04691, yticks=[0.1, 0.0], t0_x=49.70, ppm=16.542, xticks_pt=[]),

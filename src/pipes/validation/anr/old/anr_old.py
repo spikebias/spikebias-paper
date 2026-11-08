@@ -6,92 +6,8 @@ Usage:
 
     # pid 3810544
     conda activate envs/spikebias
-
-    # layer 1
-    nohup python -m src.pipes.validation.anr.anr \
-        --recording-path-marques dataset/00_raw/recording_marques_smith --freq-max-marques 14999 \
-        --recording-path-npx-spont dataset/00_raw/recording_npx_spont --freq-max-npx-spont 19999 \
-        --recording-path-npx-evoked dataset/00_raw/recording_npx_evoked --freq-max-npx-evoked 9999 \
-        --recording-path-dense-probe dataset/00_raw/recording_dense_probe1 --freq-max-dense-probe 9999 \
-        --recording-path-horvath-probe dataset/00_raw/recording_horvath_probe1 --freq-max-horvath-probe 9999 \
-        --compress-to-int16 True \
-        --layer L2_3 \
-        --save-data-path anrs_l2_3.npz \
-        --save-fig-path fig2q_l2_3.svg \
-        > out_anrs_l2_3.log 2>&1 &
-
-    # layer 2/3 - pid: 2875961
-    nohup python -m src.pipes.validation.anr.anr \
-        --recording-path-marques dataset/00_raw/recording_marques_smith --freq-max-marques 14999 \
-        --recording-path-npx-spont dataset/00_raw/recording_npx_spont --freq-max-npx-spont 19999 \
-        --recording-path-npx-evoked dataset/00_raw/recording_npx_evoked --freq-max-npx-evoked 9999 \
-        --recording-path-dense-probe dataset/00_raw/recording_dense_probe2 --freq-max-dense-probe 9999 \
-        --recording-path-horvath-probe dataset/00_raw/recording_horvath_probe2 --freq-max-horvath-probe 9999 \
-        --compress-to-int16 True \
-        --layer L2_3 \
-        --save-data-path anrs_l2_3.npz \
-        --save-fig-path fig2q_l2_3.svg \
-        > out_anrs_l2_3.log 2>&1 &        
-
-    # layer 4 - pid: 2919284
-    nohup python -m src.pipes.validation.anr.anr \
-        --recording-path-marques dataset/00_raw/recording_marques_smith --freq-max-marques 14999 \
-        --recording-path-npx-spont dataset/00_raw/recording_npx_spont --freq-max-npx-spont 19999 \
-        --recording-path-npx-evoked dataset/00_raw/recording_npx_evoked --freq-max-npx-evoked 9999 \
-        --recording-path-dense-probe dataset/00_raw/recording_dense_probe2 --freq-max-dense-probe 9999 \
-        --recording-path-horvath-probe dataset/00_raw/recording_horvath_probe2 --freq-max-horvath-probe 9999 \
-        --compress-to-int16 True \
-        --layer L4 \
-        --save-data-path anrs_l4.npz \
-        --save-fig-path fig2q_l4.svg \
-        > out_anrs_l4.log 2>&1 &
-
-    # layer 5 - pid: 3091380
-    # TODO: too many sites for RAM: subsample.
-    sudo -S sh -c 'echo 1 > /proc/sys/vm/drop_caches'
-    nohup python -m src.pipes.validation.anr.anr \
-        --recording-path-marques dataset/00_raw/recording_marques_smith --freq-max-marques 14999 \
-        --recording-path-npx-spont dataset/00_raw/recording_npx_spont --freq-max-npx-spont 19999 \
-        --recording-path-npx-evoked dataset/00_raw/recording_npx_evoked --freq-max-npx-evoked 9999 \
-        --recording-path-dense-probe dataset/00_raw/recording_dense_probe2 --freq-max-dense-probe 9999 \
-        --recording-path-horvath-probe dataset/00_raw/recording_horvath_probe2 --freq-max-horvath-probe 9999 \
-        --recording-path-buccino dataset/00_raw/recording_buccino --freq-max-buccino 15999 \
-        --compress-to-int16 True \
-        --max-duration 1800\
-        --layer L5 \
-        --save-data-path anrs_l5.npz \
-        --save-fig-path fig2q_l5.svg \
-        > out_anrs_l5.log 2>&1 &        
-
-        
-    # layer 6 - pid: 3109053
-    sudo -S sh -c 'echo 1 > /proc/sys/vm/drop_caches'
-    nohup python -m src.pipes.validation.anr.anr \
-        --recording-path-marques dataset/00_raw/recording_marques_smith --freq-max-marques 14999 \
-        --recording-path-npx-spont dataset/00_raw/recording_npx_spont --freq-max-npx-spont 19999 \
-        --recording-path-npx-evoked dataset/00_raw/recording_npx_evoked --freq-max-npx-evoked 9999 \
-        --recording-path-dense-probe dataset/00_raw/recording_dense_probe2 --freq-max-dense-probe 9999 \
-        --recording-path-horvath-probe dataset/00_raw/recording_horvath_probe2 --freq-max-horvath-probe 9999 \
-        --recording-path-buccino dataset/00_raw/recording_buccino --freq-max-buccino 15999 \
-        --compress-to-int16 True \
-        --layer L6 \
-        --save-data-path anrs_l6.npz \
-        --save-fig-path fig2q_l6.svg \
-        > out_anrs_l6.log 2>&1 & 
-
-Execution time: 15 minutes
-
-Tested on: 
-    
-    - Ubuntu 24.04.1 LTS (32 cores, 188 GB RAM, Intel(R) Core(TM) i9-14900K @3.2 GHz/5.8 GHz)
-
-Resource required:
-
-    - CPU: multi-processing
-    - 180 GB RAM
 """
 
-# import libs
 import warnings
 import os
 import multiprocessing
@@ -112,7 +28,7 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 warnings.filterwarnings("ignore")
 
 # move to PROJECT PATH
-PROJ_PATH = "/home/steeve/steeve/epfl/code/spikebias/"
+PROJ_PATH = "/home/steeve/steeve/epfl/code/spikebias-paper/"
 os.chdir(PROJ_PATH)
 
 # my custom software
@@ -168,35 +84,16 @@ LG_FRAMEON = False  # no legend frame
 
 
 def get_snr_pdfs(norm_traces: np.ndarray, bins):
-    """calculate amplitude-to-noise ratio distributions,
-    their median and 95% confidence interval
-
-    Args:
-        norm_traces (np.ndarray): _description_
-        bins (_type_): _description_
-        data (list(array)): pdf by site
-
-    Returns:
-        dist_mean (np.array): 1-D array of mean snr pdf over sites
-        dist_ci:  95% confidence interval of snr pdf over sites
-        data (dict[list]):
-        - key: "pdf_by_site"
-        - value: list of 1-D arrays. One list entry per site.
-    """
+    """calculate amplitude-to-noise ratio distributions, their median and 95% confidence interval"""
 
     # calculate average + ci of probabilities density
-    # over contacts
-    # calculate mean absolute deviation mad and divide
-    # amplitude by mad
     proba_all = []
     for c_i in range(len(norm_traces)):
         counts, bins = np.histogram(norm_traces[c_i], bins=bins)
         proba = counts / np.sum(counts)
         proba_all.append(proba)
 
-    # return stats
     dist_mean = np.median(np.array(proba_all), axis=0)
-    # dist_mean = np.array(proba_all).mean(axis=0)
     dist_ci = 1.96 * np.std(proba_all, axis=0) / np.sqrt(len(proba_all[0]))
 
     # store sites' data
@@ -220,14 +117,12 @@ def compute_anrs(
     sfreq = Recording.get_sampling_frequency()
     logger.info(f"Full recording info: {Recording}")
 
-    # 2 - Get shorter duration (due to limited RAM)
+    # 2 - Get shorter duration
     if max_duration < Recording.get_total_duration():
         Recording = Recording.frame_slice(start_frame=0, end_frame=max_duration * sfreq)
         logger.info(f"Shorter recording info: {Recording}")
 
-    # 3 - get good sites (in cortex)
-    # standardize layer 2_3
-    # standardize sites outside
+    # 3 - get good sites
     site_ly = Recording.get_property("layers")
     site_ly = ["L2_3" if l_i == "L2" or l_i == "L3" else l_i for l_i in site_ly]
     site_ly = ["Outside" if l_i == "WM" else l_i for l_i in site_ly]
@@ -247,15 +142,13 @@ def compute_anrs(
         f"""Layers after site curation are: {np.unique(Recording.get_property("layers"))}"""
     )
 
-    # 5. compress to int16 (like the Kilosort sorters)
-    # nov 22 2024
+    # 5. compress to int16
     if compress_to_int16:
         Recording = spre.astype(Recording, "int16")
         logger.info(f"Compressed to int16 in {np.round(time.time()-t0,2)} secs")
     logger.info(f"Recording dtype is {Recording.dtype}")
 
     # 6. preprocess
-    # bandpass filter
     logger.info(f"Bandpass filtering ....")
     Recording = spre.bandpass_filter(
         recording=Recording, freq_min=freq_min, freq_max=freq_max
@@ -290,7 +183,6 @@ def compute_anrs_buccino(
     t0 = time.time()
 
     # keep 20 channels
-    # (more require too much ram)
     site_ids_to_remove = np.arange(20, 384, 1)
 
     # 1 - Load silico and vivo traces
@@ -298,7 +190,7 @@ def compute_anrs_buccino(
     sfreq = Recording.get_sampling_frequency()
     logger.info(f"Full recording info: {Recording}")
 
-    # 2 - Get shorter duration (due to limited RAM)
+    # 2 - Get shorter duration
     if max_duration < Recording.get_total_duration():
         Recording = Recording.frame_slice(start_frame=0, end_frame=max_duration * sfreq)
         logger.info(f"Shorter recording info: {Recording}")
@@ -307,15 +199,13 @@ def compute_anrs_buccino(
     Recording = Recording.remove_channels(site_ids_to_remove)
     logger.info(f"""L5 site ids after curation are: {Recording.get_channel_ids()}""")
 
-    # 4. compress to int16 (like the Kilosort sorters)
-    # nov 22 2024
+    # 4. compress to int16
     if compress_to_int16:
         Recording = spre.astype(Recording, "int16")
         logger.info(f"Compressed to int16 in {np.round(time.time()-t0,2)} secs")
     logger.info(f"Recording dtype is {Recording.dtype}")
 
     # 5. preprocess
-    # bandpass filter
     logger.info(f"Bandpass filtering ....")
     Recording = spre.bandpass_filter(
         recording=Recording, freq_min=freq_min, freq_max=freq_max
@@ -440,7 +330,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--save-fig-path",
-        default="./figures/08_source_data/fig2q/fig2q.svg",
+        default="./figures/source_data/fig2q/fig2q.svg",
         help="save fig of amplitude-to-noise-ratio distribution",
     )
     args = parser.parse_args()
@@ -455,7 +345,7 @@ if __name__ == "__main__":
     logger.info(f"freq_max: {args.freq_max_horvath_probe}")
     logger.info(f"freq_max: {args.freq_max_buccino}")
 
-    # run ---------------------------------------------
+    # run
 
     # track time
     t_start = time.time()
@@ -673,7 +563,6 @@ if __name__ == "__main__":
     xmin, xmax = ax.get_xlim()
 
     # set x and y axis ticks and limits
-    # ax.set_xlim([np.floor(xmin), np.ceil(xmax)])
     ax.set_xticks(
         xticks,
         xticks,

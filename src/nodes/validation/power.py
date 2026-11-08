@@ -815,9 +815,6 @@ def eval_freq_scaling(powers: dict, freq_range=tuple):
         log_powers.append(log_power)
 
     # report stats
-    # print("mean alpha:", np.mean(alphas))
-    # print("std alpha:", np.std(alphas))
-    # print("n=", n_sites)
     return alphas, log_powers, log_freq, intercepts
 
 
@@ -863,7 +860,7 @@ def plot_fits_all(
     spiking_band=(300, 6000),
     plot_spiking_slope=True,
 ):
-    """fit power laws to low and high frequency bands of the voltage
+    """fit power laws to low and high frequency bands of the voltage traces
     traces
 
     Two bands:
@@ -1140,25 +1137,7 @@ def get_psd_data_prepro(
 def get_psd_data_prepro_npx(
     layer, nv, ns, ne, sites_nv, sites_ns, sites_ne, norm: bool = True
 ):
-    """get power spectral density of voltage traces for layer
-    (median and 95% CI over electrode sites), for three
-    neuropixels experiments: nv: marques-smith, ns: biopphy simulation
-    in spontaneous regule, ne: biophy simulation in evoked regime.
-
-    Args:
-        layer (_type_): list of layers
-        nv (_type_): psd data for marques-smith exp.
-        ns (_type_): psd data for biophy spont exp.
-        ne (_type_): psd data for biophy evoked exp.
-        sites_nv (_type_): list of electrode site ids for marques-smith exp.
-        sites_ns (_type_): list of electrode site ids for biophy spont exp.
-        sites_ne (_type_): list of electrode site ids for biophy evoked exp.
-        norm (bool, optional): _description_. Defaults to True. Normalize psd
-        ...or not by the total power
-
-    Returns:
-        dict: _description_
-    """
+    """get power spectral density of voltage traces for layer, for three neuropixels experiments: nv: marques-smith"""
     # return data structure
     d = dict()
 
@@ -1507,7 +1486,7 @@ def get_psd_data_prepro_layer_5_demo(layer, ns, ne, sites_ns, sites_ne, norm=Tru
 def plot_power_law_fits(
     ax, d, prms, cl, pm, pm_fit1, pm_fit2, lfp_band=(0, 90), spiking_band=(300, 6000)
 ):
-    """plot power law fit to low and high frequency bands of the
+    """plot power law fit to low and high frequency bands of the voltage trace
     voltage trace
 
     Args:
@@ -1755,7 +1734,7 @@ def plot_power_law_fits_dense(
 def plot_power_law_fits_npx(
     ax, d, prms, cl, pm, pm_fit1, pm_fit2, lfp_band=(0, 90), spiking_band=(300, 6000)
 ):
-    """plot power law fit to low and high frequency bands of the
+    """plot power law fit to low and high frequency bands of the voltage trace
     voltage trace
 
     Args:
@@ -2696,7 +2675,7 @@ def plot_spiking_freq_scaling_stats_layer_5(ax, dd, cl):
 
 
 def plot_power_snr_stats(ax, d: dict, cl: dict):
-    """calculate and plot spiking activity
+    """calculate and plot spiking activity power-to-lfp-noise ratio
     power-to-lfp-noise ratio
 
     Args:

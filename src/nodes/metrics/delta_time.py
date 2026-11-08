@@ -7,17 +7,7 @@ from joblib import Parallel, delayed
 
 
 def get_unit_accuracies(gt_path: str, sorted_path: str, delta_time: float, duration_sec: float = 600):
-    """Accuracy of each ground truth unit (best agreement score with a sorted unit)
-
-    Args:
-        gt_path (str): path of the ground truth SortingExtractor
-        sorted_path (str): path of the sorted SortingExtractor
-        delta_time (float): time window (ms) around each ground truth spike within which sorted and ground truth spikes coincide
-        duration_sec (float): duration of the ground truth analysed, from the start of the recording
-
-    Returns:
-        np.array: accuracy of each ground truth unit, in descending order
-    """
+    """Accuracy of each ground truth unit"""
     SortingTrue = si.load_extractor(gt_path)
     SortingTrue = SortingTrue.frame_slice(start_frame=0, end_frame=int(duration_sec * SortingTrue.get_sampling_frequency()))
     Sorting = si.load_extractor(sorted_path)
@@ -26,11 +16,7 @@ def get_unit_accuracies(gt_path: str, sorted_path: str, delta_time: float, durat
 
 
 def get_accuracy_vs_delta_time(gt_path: str, sorted_path: str, delta_times, duration_sec: float = 600, threshold: float = 0.8, n_jobs: int = 16):
-    """Sorting accuracy (proportion of ground truth units with an accuracy of at least `threshold`) for each delta time
-
-    Returns:
-        np.array: sorting accuracy for each delta time
-    """
+    """Sorting accuracy for each delta time"""
     def one(dt):
         acc = get_unit_accuracies(gt_path, sorted_path, dt, duration_sec)
         return np.sum(acc >= threshold) / len(acc)
@@ -39,22 +25,7 @@ def get_accuracy_vs_delta_time(gt_path: str, sorted_path: str, delta_times, dura
 
 
 def get_accuracy_vs_shift(gt_path: str, sorted_path: str, unit_id, delta_time: float, shifts_us, duration_sec: float = 600):
-    """Accuracy of a ground truth unit after constant shifts of its spike timestamps
-
-    The accuracy is the best agreement score between the shifted ground truth unit and the sorted units.
-    A positive shift subtracts the shift from the timestamps, as spikeinterface's align_sorting does.
-
-    Args:
-        gt_path (str): path of the ground truth SortingExtractor
-        sorted_path (str): path of the sorted SortingExtractor
-        unit_id: id of the ground truth unit
-        delta_time (float): delta time (ms) of the comparison
-        shifts_us (array): shifts (microseconds)
-        duration_sec (float): duration analysed, from the start of the recording
-
-    Returns:
-        np.array: accuracy for each shift
-    """
+    """Accuracy of a ground truth unit after constant shifts of its spike timestamps"""
     from spikeinterface.core import NumpySorting
 
     Gt = si.load_extractor(gt_path)
@@ -72,11 +43,7 @@ def get_accuracy_vs_shift(gt_path: str, sorted_path: str, unit_id, delta_time: f
 
 
 def get_accuracy_vs_shift_all(gt_path: str, sorted_path: str, unit_ids, delta_times, shifts_us, duration_sec: float = 600, n_jobs: int = 16):
-    """Accuracy of each ground truth unit after constant shifts of its spike timestamps, for each delta time
-
-    Returns:
-        dict: {delta time: {unit id: np.array of accuracies, one for each shift}}
-    """
+    """Accuracy of each ground truth unit after constant shifts of its spike timestamps, for each delta time"""
     pairs = [(dt, u) for dt in delta_times for u in unit_ids]
     out = Parallel(n_jobs=n_jobs)(delayed(get_accuracy_vs_shift)(gt_path, sorted_path, u, dt, shifts_us, duration_sec) for dt, u in pairs)
     result = {dt: {} for dt in delta_times}
