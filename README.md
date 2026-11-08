@@ -81,7 +81,7 @@ See jupyter notebooks in notebooks/0_demo/
 
 How to run the software on the manuscript's data.
 
-1. You can run the notebooks in notebooks/2_results_editorial_requests (one notebook per figure panel; the notebooks starting with 0_ download the data or compute data used by the panels) with the installed virtual environment by running the command below, then selecting the kernel "spikebias" in the notebook:
+1. You can run the notebooks in notebooks/1_results (one notebook per figure panel; the notebooks starting with 0_ download the data or compute data used by the panels) with the installed virtual environment by running the command below, then selecting the kernel "spikebias" in the notebook:
 
 ```bash
 python -m ipykernel install --user --name spikebias --display-name "spikebias"

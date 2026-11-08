@@ -18,7 +18,7 @@ import time
 import nbformat
 from nbclient import NotebookClient
 
-NOTEBOOKS = "notebooks/2_results_editorial_requests"
+NOTEBOOKS = "notebooks/1_results"
 # calls that load or compute data
 HEAVY_CALLS = re.compile(r"load|read|compute|extract|fit|evaluate|train|run|simulate|save|^to_|download|slice|traces|predict|analyz|wave|pca|sort|"
                          r"get_config|Client|query|merge|concat|groupby|apply|subprocess|system", re.IGNORECASE)
