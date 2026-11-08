@@ -3,9 +3,9 @@
 usage:
 
     python src/nodes/waveform/run.py \
-        --raw-recording-path '/home/steeve/steeve/epfl/code/spikebias/dataset/00_raw/recording_npx_spont'\
-        --sorting-path '/home/steeve/steeve/epfl/code/spikebias/dataset/01_intermediate/sorting/npx_spont/SortingKS3' \
-        --waveform-path '/home/steeve/steeve/epfl/code/spikebias/dataset/01_intermediate/waveforms/npx_spont/SortingKS3' \
+        --raw-recording-path '/home/steeve/steeve/epfl/code/spikebias-paper/dataset/00_raw/recording_npx_spont'\
+        --sorting-path '/home/steeve/steeve/epfl/code/spikebias-paper/dataset/01_intermediate/sorting/npx_spont/SortingKS3' \
+        --waveform-path '/home/steeve/steeve/epfl/code/spikebias-paper/dataset/01_intermediate/waveforms/npx_spont/SortingKS3' \
         --sampling-freq 40000
 
 tested on: 

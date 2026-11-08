@@ -31,61 +31,44 @@ logging.config.dictConfig(LOG_CONF)
 logger = logging.getLogger("root")
 
 
-def get_waveformExtractor_for_single_units(
-    sort_path: str,
-    study_path,
-    save_path: str,
-    n_sites=384,
-    load_if_exists: bool = False,
-    add_pca: bool = True,
-    n_components=5,
-):
-    """Setup WaveformExtractors to calculate quality metrics for single units
+# def get_waveformExtractor_for_single_units
 
-    Args:
-        sort_path (str): _description_
-        study_path (_type_): _description_
-        save_path (str): _description_
-        n_sites (int, optional): _description_. Defaults to 384.
-        load_if_exists: bool=False (bool)
-        add_pca (bool): only if load_if_exists=False
+# Args
 
-    Returns:
-        _type_: _description_
-    """
+# Returns
 
-    # compute
-    if not load_if_exists:
-        # get single units
-        Sorting = si.load_extractor(sort_path)
-        su_ix = np.where(Sorting.get_property("KSLabel") == "good")[0]
-        su_unit_ids = Sorting.unit_ids[su_ix]
+#     # compute
 
-        # load WaveformExtractor
-        We = si.WaveformExtractor.load_from_folder(study_path)
+#         # get single units
 
-        # create waveformExtractor for single units
-        # which we will keep for all downstream analyses
-        # this should speed up computations
-        shutil.rmtree(save_path, ignore_errors=True)
-        WeSu = We.select_units(unit_ids=su_unit_ids, new_folder=save_path)
+#         # load WaveformExtractor
 
-        # setup two properties required to calculate some quality metrics
-        WeSu.recording.set_property("gain_to_uV", np.ones((n_sites,)))
-        WeSu.recording.set_property("offset_to_uV", np.zeros((n_sites,)))
+#         # create waveformExtractor for single units
 
-        # augment extractors with pca results
-        if add_pca:
-            _ = compute_principal_components(
-                waveform_extractor=WeSu,
-                n_components=n_components,
-                mode="by_channel_local",
-                **job_kwargs,
-            )
-    else:
-        # or load existing
-        WeSu = si.WaveformExtractor.load_from_folder(save_path)
-    return WeSu
+#         # setup two properties required to calculate some quality metrics
+
+#         # add pca to waveform extractor
+
+
+# def get_waveformExtractor_for_single_units
+
+# Args
+
+# Returns
+
+#     # load, else compute
+
+
+
+#         # get "good" sorted single-unit ids
+
+#         # load WaveformExtractor
+
+#         # create waveformExtractor for single units
+
+#         # setup two properties required to calculate some quality metrics
+
+#         # add pca to waveform extractor
 
 
 def mad(data):
@@ -94,15 +77,7 @@ def mad(data):
 
 
 def get_mad_ratio(spike_amp, noise_amp):
-    """calculate an sd_ratio robust to outliers
-
-    Args:
-        spike_amp (_type_): _description_
-        noise_amp (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """
+    """calculate an sd_ratio robust to outliers"""
     mad_unit = mad(spike_amp)  # twice smaller than std
     mad_noise = mad(noise_amp)
     return mad_unit / mad_noise
@@ -131,17 +106,8 @@ def get_mad_ratio_all_units(unit_ids, WeNS, spike_amp):
     return mad_ratio
 
 
-def add_spike_amplitude_extension(we, n_sites, load_if_exists: bool):
-    """Add spike amplitudes to WaveformExtractor
-
-    Args:
-        we (WaveformExtractor): _description_
-        n_sites (int): typically 384 for neuropixels
-        load_if_exists (bool): load if exists
-
-    Returns:
-        WaveformExtractor: _description_
-    """
+def add_spike_amplitude_extension(we, n_sites, load_if_exists: bool, job_kwargs:dict):
+    """Add spike amplitudes to WaveformExtractor"""
 
     # these two properties are required to compute amplitudes
     we.recording.set_property("gain_to_uV", np.ones((n_sites,)))
@@ -150,7 +116,7 @@ def add_spike_amplitude_extension(we, n_sites, load_if_exists: bool):
     # compute spike amplitudes
     # or it as an extension
     if not load_if_exists:
-        _ = si.postprocessing.compute_spike_amplitudes(we, outputs="by_unit")
+        _ = si.postprocessing.compute_spike_amplitudes(we, outputs="by_unit", **job_kwargs)
     else:
         we.load_extension("spike_amplitudes")
 
@@ -159,49 +125,29 @@ def add_spike_amplitude_extension(we, n_sites, load_if_exists: bool):
     return we
 
 
-def get_quality_metrics(sorting_path: str, 
-                        study_path_all: str, 
-                        study_path_su: str, 
-                        n_sites=384, 
-                        load_if_exists=True,
-                        load_we_if_exists=True, 
-                        load_amp_if_exists=True):
-    """_summary_
+def get_quality_metrics(we,
+                        load_qm_if_exists=False,
+                        skip_pc_metrics=True, 
+                        job_kwargs:dict={}):
+    """compute cell quality metrics"""
+    # add spike amplitudes to waveform extractor
+    we = add_spike_amplitude_extension(we, n_sites=we.get_num_channels(), 
+                                         load_if_exists=load_qm_if_exists, 
+                                         job_kwargs=job_kwargs)
 
-    Args:
-        sorting_path (str): path of SortingExtractor
-        study_path_all (str): path of WaveformExtractor for all sorted units
-        study_path_su (str): path of WaveformExtractor for sorted single units
-        load_if_exists (bool): _description_
-        n_sites (int, optional): _description_. Defaults to 384.
-
-    Returns:
-        _type_: _description_
-    """
-    
-
-    # (40s)for single units
-    # note: adding PCA takes 3 hours (do once, then set load_if_exists=True)
-    WeNs = get_waveformExtractor_for_single_units(
-        sorting_path, study_path_all, study_path_su, n_sites=n_sites, load_if_exists=load_we_if_exists
-    )
-    # add spike amplitudes
-    WeNs = add_spike_amplitude_extension(WeNs, n_sites=n_sites, load_if_exists=load_amp_if_exists)
-
-    # pre-compute Spiketinterface quality metrics
-    # 20 secs/unit
+    # compute quality metrics
     qmetrics = qm(
-        WeNs,
+        we, 
         qm_params={
             "amplitude_cutoff": {
                 "peak_sign": "neg",
                 "num_histogram_bins": 100,
                 "histogram_smoothing_value": 3,
-                "amplitudes_bins_min_ratio": 0,  # instead of 5
+                "amplitudes_bins_min_ratio": 0,
             }
         },
-        load_if_exists=load_if_exists,
-        skip_pc_metrics=True,
+        load_if_exists=load_qm_if_exists,
+        skip_pc_metrics=skip_pc_metrics,
         **job_kwargs,
     )
     
@@ -220,22 +166,26 @@ def get_quality_metrics(sorting_path: str,
         ]
     ]
 
-    # add silhouette metric (pca-based but fast enough)
+    # add quality metric
+    assert we.has_extension("principal_components"), """run before compute_principal_components(waveform_extractor=we, n_components=5, mode="by_channel_local")"""
+
+    # - add silhouette metrics
     silhouette = qm(
-        WeNs,
+        we,
         metric_names=["silhouette"],
+        skip_pc_metrics=False,
         **job_kwargs,
     )
     qmetrics["silhouette"] = silhouette.values
 
-    # handle missing metrics
+    # report missing metrics
     print("****************** Analysing data completion ***************")
     print("Data completion:", qmetrics.notna().sum())
     print("quality metrics are:", qmetrics.columns)
     return qmetrics
 
 
-def get_evaluated_sorted_single_unit_ids(quality_path, exp, sorter):
+def get_sorted_single_unit_ids_from_file(quality_path, exp, sorter):
 
     # load evaluated sorted single units
     unit_quality = pd.read_csv(quality_path)
@@ -245,58 +195,48 @@ def get_evaluated_sorted_single_unit_ids(quality_path, exp, sorter):
     return df.sorted.values
 
 
-def get_evaluated_sorted_single_units_quality_metrics(
-    single_unit_ids, sorting_path, study_all_path, study_su_path, load_we_if_exists=True, 
-    load_amp_if_exists=True
+
+def engineer_quality_metrics(
+    single_unit_ids: np.array, we, load_qm_if_exists=False,
+    job_kwargs={}
 ):
-    """Compute the quality metrics of the sorted 
-    single units
-
-    Args:
-        single_unit_ids (_type_): _description_
-        sorting_path (_type_): _description_
-        study_all_path (_type_): _description_
-        study_su_path (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """
-
-    # pre-compute all custom quality metrics
-    qmetrics = get_quality_metrics(sorting_path, 
-                                   study_all_path, 
-                                   study_su_path, 
-                                   384, 
-                                   False, 
-                                   load_we_if_exists=load_we_if_exists, 
-                                   load_amp_if_exists=load_amp_if_exists)
-    
-    # get WaveformExtractor
-    We = si.WaveformExtractor.load_from_folder(study_su_path)
+    """Compute metrics of quality for each sorted single-unit"""
+    # pre-compute quality metrics
+    print("\nComputing spikeinterface quality metrics:")
+    qmetrics = get_quality_metrics(we, 
+                                   load_qm_if_exists=load_qm_if_exists,
+                                   job_kwargs=job_kwargs)
 
     # pre-compute negative spike amplitudes
+    print("\nExtracing spike amplitudes:")
     spike_amp = si.postprocessing.compute_spike_amplitudes(
-        We, peak_sign="neg", outputs="by_unit", load_if_exists=True
+        we, peak_sign="neg", outputs="by_unit", 
+        load_if_exists=load_qm_if_exists, **job_kwargs
     )[0]
 
     # add mad_ratio
-    mad_ratio = get_mad_ratio_all_units(qmetrics.index, We, spike_amp)
+    print("\nCalculating MAD ratios:")
+    mad_ratio = get_mad_ratio_all_units(qmetrics.index, we, spike_amp)
     qmetrics["mad_ratio"] = mad_ratio
+
+    # spikeinterface's unit_ids are strings
+    qmetrics.index = qmetrics.index.astype(int)
+
+    # sanity check units match
+    missing = set(qmetrics.index) - set(single_unit_ids)
+    if missing:
+        raise ValueError(f"{len(missing)} qmetric ids missing from scores.columns: {sorted(missing)[:10]}")
 
     # filter qualified single-units (in sorting_quality.py pipeline)
     qmetrics = qmetrics.loc[single_unit_ids, :]
+
+    print("\nQuality metrics used: ")
+    print(qmetrics.columns)
     return qmetrics
 
 
 def get_good_and_bad_units(quality_path: str, exp="NS", sorter="KS4"):
-    """_summary_
-
-    Args:
-        quality_path (str): _description_
-
-    Returns:
-        _type_: _description_
-    """
+    """filter "good" and "bad" sorted single-units"""
     
     # load table of sorted units categorized based
     # on their biases ("overmerging", "oversplitting"
@@ -321,12 +261,19 @@ def get_good_and_bad_units(quality_path: str, exp="NS", sorter="KS4"):
     return good_unit_ids, bad_unit_ids
 
 
-def format_dataset(qmetric, good_unit_id, bad_unit_id, sorting_path, GT_ns_10m):
+def format_dataset(qmetric, good_unit_id, bad_unit_id, Sorting, SortingTrue, delta_time=1.3):
 
-    # predicted scores
-    Sorting = si.load_extractor(sorting_path)
-    SortingTrue = si.load_extractor(GT_ns_10m)
-    scores = get_scores(SortingTrue, Sorting, 1.3)
+    # compute agreement between the spike trains of sorted and ground truth units
+    scores = get_scores(SortingTrue, Sorting, delta_time=delta_time)
+
+    # cast as integers to match qmetric.index
+    scores.columns = scores.columns.astype(int)
+
+    # sanity check units match
+    missing = set(qmetric.index) - set(scores.columns)
+    if missing:
+        raise ValueError(f"{len(missing)} qmetric ids missing from scores.columns: {sorted(missing)[:10]}")
+
     scores = scores.loc[:, qmetric.index].max().values
 
     # build dataset
@@ -354,32 +301,33 @@ def format_dataset(qmetric, good_unit_id, bad_unit_id, sorting_path, GT_ns_10m):
     return dataset, predictive_metrics
 
 
-def load_dataset(quality_path, exp, sorter, sorting_path, STUDY_ns, STUDY_ns_su, GT_ns_10m, load_we_if_exists=False,
-        load_amp_if_exists=False):
-
-    # get evaluated sorted single-units
-    single_unit_id = get_evaluated_sorted_single_unit_ids(
-        quality_path, exp, sorter
+def load_dataset(single_unit_id, good_unit_id, bad_unit_id, Sorting,
+                 SortingTrue, we, load_qm_if_exists=False, 
+                 delta_time=1.3, job_kwargs={}):
+    """Engineer the dataset of quality metrics features to train the classifier"""
+    # engineer unit quality metrics
+    qmetric = engineer_quality_metrics(
+        single_unit_id, we, load_qm_if_exists=load_qm_if_exists,
+        job_kwargs=job_kwargs
     )
     
-    # get unit quality metrics
-    qmetric = get_evaluated_sorted_single_units_quality_metrics(
-        single_unit_id, sorting_path, STUDY_ns, STUDY_ns_su, load_we_if_exists=load_we_if_exists,
-        load_amp_if_exists=load_amp_if_exists
-    )
-    
-    # label good and bad units
-    good_unit_id, bad_unit_id = get_good_and_bad_units(quality_path, exp=exp, sorter=sorter)
-    
-    # make dataset table and predictive metrics
-    dataset, predictors = format_dataset(qmetric, good_unit_id, bad_unit_id, sorting_path, GT_ns_10m)
-    
-    # curate units
-    logger.info("CURATION ----------------------------")
+    # create a matrix of quality metrics features
+    dataset, predictors = format_dataset(qmetric, good_unit_id, 
+                                         bad_unit_id, Sorting, SortingTrue, 
+                                         delta_time=delta_time)
     
     # filter units without infinite-value feature
     infdata = dataset.index[dataset.sum(axis=1) == np.inf]
     logger.info(f"nb of units before filtering units with inf feature: {len(dataset)}")
+
+    # print number of units after curation of missing data
     dataset = dataset.drop(index=infdata)
-    logger.info(f"nb of units after: {len(dataset)}")
-    return {"dataset": dataset, "predictors": predictors, "good_unit_id": good_unit_id, "bad_unit_id": bad_unit_id, "qmetric": qmetric, "single_unit_id": single_unit_id}
+    logger.info(f"nb of units after clearning missing data: {len(dataset)}")
+
+    return {"dataset": dataset, 
+            "predictors": predictors, 
+            "good_unit_id": good_unit_id, 
+            "bad_unit_id": bad_unit_id, 
+            "qmetric": qmetric, 
+            "single_unit_id": single_unit_id
+            }

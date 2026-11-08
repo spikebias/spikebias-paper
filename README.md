@@ -5,6 +5,8 @@
 author: laquitainesteeve@gmail.com  
 contributors: tharayiljoe@gmail.com; milo.imbeni@gmail.com; james.isbister@openbraininstitute.org; michael.reimann@openbraininstitute.org
 
+This repository contains the code that reproduces the paper's analyses and figures. To analyse spike sorting biases in your own data, use the [spikebias](https://github.com/spikebias/spikebias) package (`pip install spikebias`).
+
 # System requirements
 
 All software dependencies and operating systems (including version numbers)
@@ -79,7 +81,7 @@ See jupyter notebooks in notebooks/0_demo/
 
 How to run the software on the manuscript's data.
 
-1. You can run the notebooks in notebooks/1_results and notebooks/2_supp_results with the installed virtual environment by running the command below, then selecting the kernel "spikebias" in the notebook:
+1. You can run the notebooks in notebooks/1_results (one notebook per figure panel; the notebooks starting with 0_ download the data or compute data used by the panels) with the installed virtual environment by running the command below, then selecting the kernel "spikebias" in the notebook:
 
 ```bash
 python -m ipykernel install --user --name spikebias --display-name "spikebias"
@@ -92,3 +94,30 @@ python -m ipykernel install --user --name spikebias --display-name "spikebias"
 * The O1 sonata circuit: https://zenodo.org/records/11113043 (51 GB)
 * The cell id in our experiments are the cell ids in the CELL_ID_SONATA - 1.
 * All the cell properties can be retrieved from these circuits.
+
+```bash
+dataset/
+    00_raw/ (505 GB)
+```
+
+# Models
+
+Trained models are in `models/` (see `models/README.md`).
+
+* `models/cebra/`: 100 cross-validated CEBRA models (`.pt` files, about 4.6 MB each) for each of three runs that classify the sorted single-units of Kilosort4 into 'good' and degraded units from their full spike waveforms and quality metrics (Supplementary Fig. 5c-e):
+    * `spont_40_iterations/` (spontaneous regime, Supplementary Fig. 5c)
+    * `evoked_40_iterations/` (evoked regime, Supplementary Fig. 5d)
+    * `spont_100_iterations/` (spontaneous regime, training loss of Supplementary Fig. 5e)
+* each folder also holds `folds.csv` (precision, recall, training and test unit indices and predictions of each fold) and `units.csv` (sorted unit id and label of each row of the dataset)
+* the `.pt` weights are not tracked by git (see `.gitignore`)
+* load a model (torch checkpoints: only load files that you trust) with `cebra==0.4.0` and `scikit-learn==1.5.2` (see `envs/cebraspike.txt`):
+
+```python
+from src.nodes.models.CebraSpike import utils
+model = utils.load_crossval_model("models/cebra/spont_40_iterations", fold=0)
+```
+
+```bash
+models/
+    cebra/ (1.1 GB)
+```
