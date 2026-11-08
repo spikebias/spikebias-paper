@@ -1,3 +1,4 @@
+
 # Swap files
 **/*.swp
 
@@ -6,20 +7,42 @@ assets/validation/*.h5
 assets/validation/output/
 assets/validation/*.npy
 assets/validation.zip
+
 # dataset
 dataset.zip
 dataset/00_raw/*
+dataset/01_intermediate/psds/*
 dataset/01_intermediate/0_silico
 dataset/01_intermediate/copyscripts
 dataset/01_intermediate/sorters/**
-dataset/01_intermediate/sorting/**
 
+# intermediate dataset: sortings
+dataset/01_intermediate/sorting/*
+
+# keep on github
+!dataset/01_intermediate/sorting/buccino/
+!dataset/01_intermediate/sorting/npx_evoked_40khz/
+
+# intermediate dataset - these are the paper's 
+# original sortings for the simulation of Horvath 
+# dense probe with the initial GPU setup
+!dataset/01_intermediate/sorting/dense_probe1/ 
+!dataset/01_intermediate/sorting/dense_probe2/
+!dataset/01_intermediate/sorting/dense_probe3/
+
+# intermediate dataset: waveforms
+dataset/01_intermediate/waveforms/npx_spont/**
+dataset/01_intermediate/waveforms/npx_evoked/**
+dataset/01_intermediate/waveforms/marques_smith/**
+
+# un-ignore
 !dataset/01_intermediate/realism/0_silico/4_spikesorting_stimulus_test_neuropixels_8-1-24__8slc_80f_360r_50t_200ms_1_smallest_fiber_gids/**
+
 
 # intermediate datasets  --------------------------
 # - keep computed psds
-!dataset/01_intermediate/psds/
-!dataset/01_intermediate/psds/**
+# !dataset/01_intermediate/psds/
+# !dataset/01_intermediate/psds/**
 dataset/01_intermediate/psds/old/
 
 # demo
@@ -27,6 +50,9 @@ notebooks/0_demo/demo_recording
 notebooks/0_demo/demo_sorting
 notebooks/0_demo/001250
 dataset/03_demo/study_npx_evoked
+
+# waveforms
+dataset/01_intermediate/waveforms/reyes_summed/
 
 #kilosort4
 faiss
@@ -36,9 +62,6 @@ faiss
 
 # temporary datasets
 temp/*
-tmp_dataset/*
-!tmp_dataset/sorting_quality_evoked_1h.csv
-!tmp_dataset/sorting_quality.csv
 
 # python virtual environments 
 envs/dandi/*
@@ -52,6 +75,7 @@ envs/mearec_si_0_100_3/*
 envs/mearec_si_0_103_0/*
 envs/pca_manifold/*
 envs/ground_truth/*
+envs/cebraspike/*
 
 
 # logs
@@ -224,3 +248,16 @@ cython_debug/
 # spack
 .spack-env
 spack-stage
+
+
+CLAUDE.md
+paper
+v100_sortings
+# trained models (weights are published with the dataset; folds.csv and README.md are tracked)
+models/**/*.pt
+
+# source data file
+figures/source_data/Source_Data.xlsx
+
+session_history.md
+temp

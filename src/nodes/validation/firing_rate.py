@@ -52,9 +52,11 @@ def get_sorted_unit_meta(sorted_path: str):
 
     # record
     unit_id_all = Sorting.unit_ids.tolist()
-    firing_rate_all = (
-        Sorting.get_property("firing_rates").astype(np.float32).tolist()
-    )
+    # spike count in the first 600 s / 600 s
+    counts = count_spikes_first_seconds(Sorting, 600)
+    counts_all = count_spikes_first_seconds(Sorting, np.inf)
+    keep = ~((counts == 0) & (counts_all > 0))
+    firing_rate_all = (counts / 600).tolist()
     layer_all = Sorting.get_property("layer").tolist()
     layer_all = utils.standardize_layers(layer_all)
     KSLabel_all = utils.get_kslabel(Sorting)
@@ -77,7 +79,14 @@ def get_sorted_unit_meta(sorted_path: str):
             "kslabel",
             "amplitude",
         ],
-    )
+    )[keep]
+
+
+def count_spikes_first_seconds(Sorting, duration_sec):
+    """Spike count of each unit in the first `duration_sec` seconds of the sorting"""
+    spikes = Sorting.to_spike_vector()
+    in_window = spikes["sample_index"] < duration_sec * Sorting.get_sampling_frequency()
+    return np.bincount(spikes["unit_index"][in_window], minlength=len(Sorting.unit_ids))
 
 
 def get_synth_unit_meta(sorted_path: str):
@@ -244,3 +253,19 @@ def plot_single_unit_ratio(ax, df_vivo, df_silico_sp, df_silico_ev, df_silico_nb
     ax.set_ylabel("Proportion (ratio)")
     ax.set_xlabel("Experiment")
     return ax
+
+
+def fix_firing_rates(df, Sorting, path, duration_sec=600, verbose=True):
+    """Recompute the firing rates (spikes/s) of a sorting whose stored `firing_rates` were not divided by the duration of the sorting"""
+    if Sorting.get_property("firing_rates") is None:        # no stored rates: nothing to correct
+        return df
+    counts = Sorting.count_num_spikes_per_unit()
+    n_spikes = np.array([counts[u] for u in Sorting.unit_ids])
+    implied_duration = n_spikes.sum() / np.nansum(Sorting.get_property("firing_rates").astype(float))
+    if implied_duration > 1.5 * duration_sec:
+        if verbose:
+            print(f"  corrected {path}: stored rates imply a duration of {implied_duration:.0f} s, recomputed over {duration_sec} s")
+        df = df.copy()
+        n_spikes = count_spikes_first_seconds(Sorting, duration_sec)       # spikes of the first `duration_sec` seconds only
+        df["firing_rate"] = (pd.Series(n_spikes, index=Sorting.unit_ids).loc[df.index.astype(Sorting.unit_ids.dtype)].values / duration_sec).astype(np.float32)
+    return df

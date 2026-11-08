@@ -113,7 +113,7 @@ import time
 import argparse
 
 # move to PROJECT PATH
-PROJ_PATH = '/home/steeve/steeve/epfl/code/spikebias/'
+PROJ_PATH = '/home/steeve/steeve/epfl/code/spikebias-paper/'
 os.chdir(PROJ_PATH)
 
 # add custom package to path

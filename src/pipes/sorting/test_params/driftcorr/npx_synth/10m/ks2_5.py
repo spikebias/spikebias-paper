@@ -83,7 +83,7 @@ import torch
 print("spikeinterface", si.__version__)
 
 # project path
-PROJ_PATH = "/home/steeve/steeve/epfl/code/spikebias/"
+PROJ_PATH = "/home/steeve/steeve/epfl/code/spikebias-paper/"
 os.chdir(PROJ_PATH)
 sys.path.append(os.path.join(PROJ_PATH, "src")) # enable custom package import
 
@@ -95,7 +95,7 @@ REC_SECS = 600
 
 # sorting parameters
 SORTER = "kilosort2_5"
-SORTER_PATH = "/home/steeve/steeve/epfl/code/spikebias/dataset/01_intermediate/sorters/Kilosort-2.5_forwcomp/"
+SORTER_PATH = "/home/steeve/steeve/epfl/code/spikebias-paper/dataset/01_intermediate/sorters/Kilosort-2.5_forwcomp/"
 SORTER_PARAMS = {
     "detect_threshold": 6,
     "projection_threshold": [10, 4],

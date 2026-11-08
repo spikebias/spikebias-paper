@@ -47,7 +47,7 @@ print("spikeinterface", si.__version__)
 torch.cuda.empty_cache()
 
 # setup project path
-PROJ_PATH = "/home/steeve/steeve/epfl/code/spikebias/"
+PROJ_PATH = "/home/steeve/steeve/epfl/code/spikebias-paper/"
 os.chdir(PROJ_PATH)
 sys.path.append(os.path.join(PROJ_PATH, "src")) # enable custom package import
 
