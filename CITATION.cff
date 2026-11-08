@@ -1,0 +1,69 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below."
+type: software
+title: "Spike sorting biases and information loss in a detailed cortical model"
+abstract: "Code that reproduces the analyses and figures of the paper: biophysical simulations of extracellular recordings of a detailed cortical microcircuit model, evaluation of spike sorters against the ground truth, and analyses of the effect of sorting biases on stimulus discrimination."
+authors:
+  - family-names: Laquitaine
+    given-names: Steeve
+    orcid: "https://orcid.org/0000-0002-9647-3149"
+    affiliation: "Institut de la Vision, INSERM, CNRS, Sorbonne Université, Paris, France"
+  - family-names: Imbeni
+    given-names: Milo
+    orcid: "https://orcid.org/0000-0002-4482-8390"
+    affiliation: "Center for Integrative Neuroscience, Maastricht University, Maastricht, Netherlands"
+  - family-names: Tharayil
+    given-names: Joseph
+    orcid: "https://orcid.org/0000-0002-2390-4104"
+    affiliation: "IT'IS Foundation, Zurich, Switzerland"
+  - family-names: Isbister
+    given-names: James B.
+    orcid: "https://orcid.org/0000-0002-1013-3013"
+    affiliation: "Open Brain Institute, Lausanne, Switzerland"
+  - family-names: Reimann
+    given-names: Michael W.
+    orcid: "https://orcid.org/0000-0003-3455-2367"
+    affiliation: "Open Brain Institute, Lausanne, Switzerland"
+repository-code: "https://github.com/spikebias/spikebias-paper"
+url: "https://spikebias.github.io"
+license: GPL-3.0
+keywords:
+  - spike sorting
+  - Neuropixels
+  - biophysical model
+  - cortex
+  - ground truth
+references:
+  - type: article
+    title: "Spike sorting biases and information loss in a detailed cortical model"
+    authors:
+      - family-names: Laquitaine
+        given-names: Steeve
+      - family-names: Imbeni
+        given-names: Milo
+      - family-names: Tharayil
+        given-names: Joseph
+      - family-names: Isbister
+        given-names: James B.
+      - family-names: Reimann
+        given-names: Michael W.
+    journal: bioRxiv
+    year: 2024
+    doi: 10.1101/2024.12.04.626805
+  - type: data
+    title: "Spike sorting biases and information loss in a detailed cortical model (Version 0.261108.1908)"
+    authors:
+      - family-names: Laquitaine
+        given-names: Steeve
+      - family-names: Imbeni
+        given-names: Milo
+      - family-names: Tharayil
+        given-names: Joseph
+      - family-names: Isbister
+        given-names: James
+      - family-names: Reimann
+        given-names: Michael
+    publisher:
+      name: DANDI Archive
+    year: 2026
+    doi: 10.48324/dandi.001250/0.261108.1908
